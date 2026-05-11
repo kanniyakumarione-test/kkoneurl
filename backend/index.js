@@ -19,7 +19,12 @@ app.use('/api/links', require('./routes/link.routes'));
 app.get('/', (req, res) => res.json({ message: 'kkoneurl API v1.0 (Supabase Powered)' }));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🛰️ Server running on port ${PORT}`);
-  console.log(`📡 Connected to Supabase`);
-});
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`🛰️ Server running on port ${PORT}`);
+    console.log(`📡 Connected to Supabase`);
+  });
+}
+
+module.exports = app;
