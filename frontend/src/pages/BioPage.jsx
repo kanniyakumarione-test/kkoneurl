@@ -41,6 +41,7 @@ const BioPreview = ({ bioPage, theme }) => {
 
 const BioPage = ({ bioPage, setBioPage }) => {
   const toast = useToast();
+  const { refreshProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('links');
   const [newLink, setNewLink] = useState({ label: '', url: '', icon: '🔗', color: '#6c63ff' });
   const [saving, setSaving] = useState(false);
@@ -104,6 +105,7 @@ const BioPage = ({ bioPage, setBioPage }) => {
       
       toast('Bio page saved successfully! ✨', 'success');
       setOriginalUsername(bioPage.username);
+      refreshProfile(); // 🔄 Sync Sidebar
       // Refresh limit if username was changed
       if (response.data?.username_last_changed) {
           const lastChanged = new Date(response.data.username_last_changed);

@@ -97,10 +97,10 @@ const Sidebar = ({ open, onClose, links = [] }) => {
             onClick={() => navigate('/settings')}
           >
             <div className="w-10 h-10 bg-gradient-to-tr from-purple-light to-cyan rounded-xl flex items-center justify-center font-black text-white text-sm">
-              {user?.user_metadata?.name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+              {profile?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold truncate">{user?.user_metadata?.name || user?.email?.split('@')[0]}</p>
+              <p className="text-sm font-bold truncate">{profile?.displayName || user?.email?.split('@')[0]}</p>
               <p className="text-[11px] text-white/30 font-medium truncate uppercase tracking-widest">Active Member</p>
             </div>
             <button 

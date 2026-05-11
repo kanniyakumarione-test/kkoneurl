@@ -29,10 +29,11 @@ const SettingsRow = ({ label, desc, children }) => (
 
 const Settings = () => {
   const toast = useToast();
-  const { logout } = useAuth();
+  const { logout, refreshProfile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: '', new: '' });
   
   const [form, setForm] = useState({
@@ -71,6 +72,7 @@ const Settings = () => {
           emailNotifs: form.notifs
         }
       });
+      refreshProfile(); // 🔄 Sync globally
       toast('Settings updated successfully! ✨', 'success');
     } catch (err) {
       toast('Failed to update settings', 'error');
@@ -85,6 +87,7 @@ const Settings = () => {
       await api.updateProfile({ password: passwordForm.new });
       toast('Password updated successfully!', 'success');
       setPasswordForm({ current: '', new: '' });
+      setShowPassword(false);
     } catch (err) {
       toast('Failed to update password', 'error');
     }
@@ -148,13 +151,21 @@ const Settings = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
                <label className="text-[10px] font-bold text-white/20 uppercase tracking-widest">New Password</label>
-               <input 
-                type="password" 
-                className="input w-full" 
-                value={passwordForm.new} 
-                onChange={e => setPasswordForm({...passwordForm, new: e.target.value})} 
-                placeholder="••••••••"
-               />
+               <div className="relative">
+                 <input 
+                  type={showPassword ? "text" : "password"} 
+                  className="input w-full pr-12" 
+                  value={passwordForm.new} 
+                  onChange={e => setPasswordForm({...passwordForm, new: e.target.value})} 
+                  placeholder="••••••••"
+                 />
+                 <button 
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
+                 >
+                   {showPassword ? <Eye size={16} className="opacity-40" /> : <Shield size={16} className="opacity-40" />}
+                 </button>
+               </div>
             </div>
           </div>
           <div className="flex justify-start pt-2">
