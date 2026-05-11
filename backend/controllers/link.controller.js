@@ -25,9 +25,13 @@ exports.shortenUrl = async (req, res) => {
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Database Insert Error:', error);
+      return res.status(500).json({ message: error.message, details: error.details });
+    }
     res.status(201).json({ ...data, _id: data.id });
   } catch (err) {
+    console.error('Server Error:', err);
     res.status(500).json({ message: err.message });
   }
 };
