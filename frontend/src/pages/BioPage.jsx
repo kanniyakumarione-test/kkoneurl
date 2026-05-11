@@ -101,10 +101,29 @@ const BioPage = ({ bioPage, setBioPage }) => {
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black font-display tracking-tight mb-2">Bio Page</h1>
-          <p className="text-white/40 text-sm">Your personal link-in-bio hub: <span className="text-purple-light font-bold">kkoneurl.vercel.app/@{bioPage.username || 'username'}</span></p>
+          <div className="flex items-center gap-2 group">
+            <p className="text-white/40 text-sm">Your personal link-in-bio hub: <span className="text-purple-light font-bold">kkoneurl.vercel.app/@{bioPage.username || 'username'}</span></p>
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(`https://kkoneurl.vercel.app/@${bioPage.username}`);
+                toast('Link copied! Ready to share.', 'success');
+              }}
+              className="p-1.5 rounded-lg bg-white/5 border border-white/5 text-white/40 hover:text-white hover:bg-purple/20 hover:border-purple/40 transition-all opacity-0 group-hover:opacity-100"
+              title="Copy Share Link"
+            >
+              <ExternalLink size={12} />
+            </button>
+          </div>
         </div>
         <div className="flex gap-3">
-          <button className="btn btn-secondary !py-2 !px-4 text-xs font-bold uppercase tracking-widest"><Eye size={14} /> Preview</button>
+          <a 
+            href={`/@${bioPage.username}`} 
+            target="_blank" 
+            rel="noreferrer"
+            className="btn btn-secondary !py-2 !px-4 text-xs font-bold uppercase tracking-widest flex items-center gap-2"
+          >
+            <Eye size={14} /> Preview
+          </a>
           <button 
             className={`btn btn-primary !py-2 !px-4 text-xs font-bold uppercase tracking-widest ${saving ? 'opacity-50' : ''}`} 
             onClick={handleSave}
