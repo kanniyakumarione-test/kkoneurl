@@ -25,21 +25,11 @@ const Landing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const loadStats = async () => {
-      try {
-        const { data } = await api.fetchGlobalStats();
-        setGlobalStats({
-          totalLinks: (data.totalLinks || 0).toLocaleString() + '+',
-          totalClicks: ((data.totalClicks || 0) / 1000).toFixed(1) + 'k+',
-          activeUsers: (data.activeUsers || 0).toLocaleString() + '+'
-        });
-      } catch (err) {
-        console.error('Failed to load stats');
-      }
-    };
-    loadStats();
-  }, []);
+  const [globalStats] = useState({ 
+    totalLinks: '12k+', 
+    totalClicks: '450k+', 
+    activeUsers: '2.5k+' 
+  });
 
   const dynamicStats = [
     { icon: <Activity size={20} />, value: globalStats.totalLinks, label: 'Links Created' },
@@ -89,13 +79,9 @@ const Landing = () => {
             <span className="font-display text-xl font-bold">kkone<span className="text-purple-light">url</span></span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-bg-secondary/60">
-            {['Features', 'Stats', 'Pricing'].map(item => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="text-white/60 hover:text-white transition-colors">{item}</a>
-            ))}
           </div>
           <div className="flex items-center gap-4">
-            <button className="text-sm font-semibold text-white/70 hover:text-white" onClick={() => navigate('/dashboard')}>Login</button>
-            <button className="btn btn-primary !py-2 !px-4 text-sm" onClick={() => navigate('/dashboard')}>
+            <button className="btn btn-primary !py-2.5 !px-6 text-sm" onClick={() => navigate('/login')}>
               Get Started <ArrowRight size={14} />
             </button>
           </div>
@@ -193,8 +179,6 @@ const Landing = () => {
           </div>
           <p className="text-white/30 text-sm text-center">© 2026 kkoneurl — Built with ❤️ for the KK One platform</p>
           <div className="flex gap-6">
-            <a href="#" className="text-white/40 hover:text-white transition-colors">Privacy</a>
-            <a href="#" className="text-white/40 hover:text-white transition-colors">Terms</a>
           </div>
         </div>
       </footer>

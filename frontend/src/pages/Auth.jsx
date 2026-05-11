@@ -27,7 +27,7 @@ const Auth = () => {
         await register(form.email, form.password, form.name);
         toast('Account created!', 'success');
       }
-      navigate('/dashboard', { state: { pendingUrl } });
+      navigate(pendingUrl ? '/links' : '/dashboard', { state: { pendingUrl } });
     } catch (err) {
       toast(err.response?.data?.message || 'Authentication failed', 'error');
     } finally {
