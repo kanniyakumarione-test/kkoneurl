@@ -4,13 +4,13 @@ const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
 });
 
-// For later: Add auth interceptor
-API.interceptors.request.use((req) => {
+// Automatically attach token to every request
+API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
-    req.headers.Authorization = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
-  return req;
+  return config;
 });
 
 export const fetchLinks = () => API.get('/links');
