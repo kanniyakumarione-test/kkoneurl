@@ -76,6 +76,7 @@ exports.updateProfile = async (req, res) => {
       .from('users')
       .upsert({
         id: req.user.id,
+        email: req.user.email,
         display_name: displayName,
         username,
         bio,
