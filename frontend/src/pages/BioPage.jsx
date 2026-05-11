@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, GripVertical, ExternalLink, Eye, Palette, Save, AlertCircle } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import * as api from '../api';
 

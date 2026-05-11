@@ -92,7 +92,7 @@ const Dashboard = ({ links }) => {
               <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">Realtime</span>
             </div>
           </div>
-          <div className="h-[240px] w-full">
+          <div style={{ height: 240, width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>

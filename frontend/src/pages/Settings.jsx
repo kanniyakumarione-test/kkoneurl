@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, Eye } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import * as api from '../api';
