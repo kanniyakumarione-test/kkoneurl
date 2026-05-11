@@ -51,6 +51,16 @@
   .input {
     @apply bg-bg-secondary border border-white/10 rounded-md px-4 py-3 text-sm text-[#f0f0ff] w-full focus:border-purple outline-none transition-all;
   }
+  /* Prevent browser auto-fill from breaking the dark theme */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #0e0e1a inset !important;
+    -webkit-text-fill-color: #f0f0ff !important;
+    caret-color: white;
+    transition: background-color 5000s ease-in-out 0s;
+  }
   .badge {
     @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;
   }

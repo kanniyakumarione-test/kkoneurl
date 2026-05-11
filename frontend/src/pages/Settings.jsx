@@ -167,6 +167,7 @@ const Settings = () => {
                    <input 
                     type={showPassword ? "text" : "password"} 
                     className="input w-full pr-12 !bg-bg-secondary border-white/10" 
+                    autoComplete="new-password"
                     value={passwordForm.new} 
                     onChange={e => setPasswordForm({...passwordForm, new: e.target.value})} 
                     placeholder="Enter new password"
@@ -181,10 +182,10 @@ const Settings = () => {
                  </div>
               </div>
             </div>
-            <div className="flex gap-3">
+            <div className="flex items-center gap-4 pt-2">
               <button 
                 onClick={handleUpdatePassword}
-                className="btn btn-primary !py-2 !px-6 text-[10px] font-bold uppercase tracking-widest"
+                className="btn btn-primary !py-2.5 !px-8 text-[11px] font-black uppercase tracking-widest shadow-lg shadow-purple/20"
               >
                 Update Password
               </button>
@@ -193,7 +194,7 @@ const Settings = () => {
                   setShowPasswordFields(false);
                   setPasswordForm({ current: '', new: '' });
                 }}
-                className="btn btn-secondary !py-2 !px-6 text-[10px] font-bold uppercase tracking-widest"
+                className="text-xs font-bold uppercase tracking-widest text-white/40 hover:text-white transition-colors px-4"
               >
                 Cancel
               </button>
