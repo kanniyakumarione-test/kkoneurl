@@ -70,11 +70,18 @@ exports.getProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
+    const { displayName, bio, avatar, theme, bio_links, username } = req.body;
+    
     const { data, error } = await supabase
       .from('users')
       .upsert({
         id: req.user.id,
-        ...req.body
+        display_name: displayName,
+        username,
+        bio,
+        avatar,
+        theme,
+        bio_links
       }, { onConflict: 'id' })
       .select()
       .single();
@@ -82,6 +89,7 @@ exports.updateProfile = async (req, res) => {
     if (error) throw error;
     res.json(data);
   } catch (err) {
+    console.error('Update Profile Error:', err);
     res.status(500).json({ message: err.message });
   }
 };
