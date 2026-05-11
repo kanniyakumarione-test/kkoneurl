@@ -16,7 +16,7 @@ CREATE TABLE users (
 -- Links Table
 CREATE TABLE links (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL,
   original_url TEXT NOT NULL,
   short_code TEXT UNIQUE NOT NULL,
   title TEXT,

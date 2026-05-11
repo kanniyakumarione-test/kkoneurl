@@ -7,6 +7,9 @@ exports.shortenUrl = async (req, res) => {
   try {
     const { originalUrl, customSlug, title, password, expiresAt, tags } = req.body;
     const shortCode = customSlug || Math.random().toString(36).substring(2, 8);
+    
+    // Convert tags string to array if needed
+    const tagsArray = Array.isArray(tags) ? tags : (tags ? tags.split(',').map(t => t.trim()) : []);
 
     const { data, error } = await supabase
       .from('links')
@@ -16,8 +19,8 @@ exports.shortenUrl = async (req, res) => {
         short_code: shortCode,
         title: title || originalUrl,
         password,
-        expires_at: expiresAt,
-        tags: tags || []
+        expires_at: expiresAt || null,
+        tags: tagsArray
       }])
       .select()
       .single();
