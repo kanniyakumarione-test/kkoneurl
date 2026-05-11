@@ -21,7 +21,6 @@ const Landing = () => {
   const [loading, setLoading] = useState(false);
   const [shortened, setShortened] = useState('');
   const [copied, setCopied] = useState(false);
-  const [globalStats, setGlobalStats] = useState({ totalLinks: '1.2k+', totalClicks: '45k+', activeUsers: '850+' });
   const { user } = useAuth();
   const navigate = useNavigate();
 
