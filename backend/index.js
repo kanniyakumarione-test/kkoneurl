@@ -6,9 +6,9 @@ require('dotenv').config();
 
 const app = express();
 
-// 1. Move CORS to the VERY TOP
+// 1. CORS - Must be first
 app.use(cors({
-  origin: '*', // Temporarily allow all during debug to break the block
+  origin: '*', 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
   credentials: true
@@ -19,33 +19,46 @@ app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
 app.use(morgan('dev'));
 
-// 3. API Routes
+// 3. Health Check (Must be before redirection)
+app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
+
+// 4. API Routes (Must be before redirection)
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/links', require('./routes/link.routes'));
 
-// 4. 🚀 Root Level Redirection
+// 5. 🚀 Root Level Redirection
 const { redirectUrl } = require('./controllers/link.controller');
 
 app.get('/:code', (req, res, next) => {
   const { code } = req.params;
   const FRONTEND_URL = process.env.FRONTEND_URL || 'https://kkoneurlorig.vercel.app';
-  const systemRoutes = ['api', 'dashboard', 'links', 'analytics', 'qr', 'bio', 'settings', 'login', '404'];
   
-  if (code.includes('.') || systemRoutes.includes(code) || code.startsWith('@')) {
-    if (code.startsWith('@')) return res.redirect(`${FRONTEND_URL}/${code}`);
-    if (systemRoutes.includes(code)) return res.redirect(`${FRONTEND_URL}/${code}`);
-    return next();
+  // 🛡️ SECURITY: If it starts with /api, STOP HERE and let Express handle it above
+  if (req.path.startsWith('/api')) return next();
+
+  const systemRoutes = ['dashboard', 'links', 'analytics', 'qr', 'bio', 'settings', 'login', '404'];
+  
+  // Handle Bio Pages (@username)
+  if (code.startsWith('@')) {
+    return res.redirect(`${FRONTEND_URL}/${code}`);
   }
 
+  // Handle System Routes (Redirect to Frontend)
+  if (systemRoutes.includes(code)) {
+    return res.redirect(`${FRONTEND_URL}/${code}`);
+  }
+
+  // Ignore files (favicon.ico, etc)
+  if (code.includes('.')) return next();
+
+  // Process as short link
   redirectUrl(req, res, next);
 });
 
+// 6. Proper 404 Fallback
 app.get('/404', (req, res) => {
   res.status(404).send('<h1>404 - Link Not Found</h1><p>The link you followed is inactive or does not exist.</p><a href="/">Go Home</a>');
 });
-
-// 5. Health Check
-app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
 
 const PORT = process.env.PORT || 5000;
 
