@@ -28,8 +28,8 @@ const LinkCard = ({ link, onDelete, onToggle, onCopy }) => {
           </div>
           
           <div className="flex items-center gap-2 mb-4">
-            <a href={`https://${link.shortUrl}`} target="_blank" className="text-purple-light font-bold text-sm hover:underline">
-              {link.shortUrl}
+            <a href={`https://kkoneurl.vercel.app/${link.short_code}`} target="_blank" className="text-purple-light font-bold text-sm hover:underline">
+              kkoneurl.vercel.app/{link.short_code}
             </a>
             <span className="text-white/20">→</span>
             <span className="text-white/40 text-xs truncate max-w-[300px]">{link.originalUrl}</span>
