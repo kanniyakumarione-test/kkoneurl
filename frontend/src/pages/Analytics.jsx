@@ -13,18 +13,23 @@ const Analytics = ({ links }) => {
 
   if (!link) return <div className="p-20 text-center text-white/40 font-bold">No links to analyze.</div>;
 
+  const deviceStats = link.device_stats || link.deviceStats || { mobile: 0, desktop: 0, tablet: 0 };
+  const geoStats = link.geo_stats || link.geoStats || {};
+  const browserStats = link.browser_stats || link.browserStats || {};
+  const dailyClicks = link.daily_clicks || link.dailyClicks || [];
+
   const deviceData = [
-    { name: 'Mobile', value: link.deviceStats.mobile },
-    { name: 'Desktop', value: link.deviceStats.desktop },
-    { name: 'Tablet', value: link.deviceStats.tablet },
+    { name: 'Mobile', value: deviceStats.mobile || 0 },
+    { name: 'Desktop', value: deviceStats.desktop || 0 },
+    { name: 'Tablet', value: deviceStats.tablet || 0 },
   ];
 
-  const geoData = Object.entries(link.geoStats)
+  const geoData = Object.entries(geoStats)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 6)
     .map(([country, clicks]) => ({ country, clicks }));
 
-  const browserData = Object.entries(link.browserStats).map(([name, value]) => ({ name, value }));
+  const browserData = Object.entries(browserStats).map(([name, value]) => ({ name, value }));
 
   return (
     <div className="space-y-8 animate-fade-in max-w-7xl">
@@ -50,14 +55,14 @@ const Analytics = ({ links }) => {
           {link.title?.[0] || '🔗'}
         </div>
         <div className="flex-1 text-center md:text-left">
-          <h2 className="text-xl font-bold mb-1">{link.title}</h2>
-          <p className="text-purple-light font-bold">{link.shortUrl}</p>
+          <h2 className="text-xl font-bold mb-1">{link.title || link.short_code}</h2>
+          <p className="text-purple-light font-bold">kkoneurl.vercel.app/{link.short_code}</p>
         </div>
         <div className="flex items-center gap-8 px-6 py-4 bg-white/5 rounded-2xl border border-white/5">
           {[
-            { val: link.clicks, label: 'Clicks' },
-            { val: link.uniqueClicks, label: 'Unique' },
-            { val: `${Math.round((link.uniqueClicks/link.clicks)*100)}%`, label: 'CTR' }
+            { val: link.clicks || 0, label: 'Clicks' },
+            { val: link.unique_clicks || link.uniqueClicks || 0, label: 'Unique' },
+            { val: (link.clicks > 0) ? `${Math.round(((link.unique_clicks || link.uniqueClicks || 0)/link.clicks)*100)}%` : '0%', label: 'CTR' }
           ].map((s, i) => (
             <div key={i} className="text-center">
               <p className="text-xl font-black font-display">{s.val.toLocaleString()}</p>
@@ -77,7 +82,7 @@ const Analytics = ({ links }) => {
           </div>
           <div className="h-[220px]">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={link.dailyClicks}>
+              <AreaChart data={dailyClicks}>
                 <defs>
                   <linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#6c63ff" stopOpacity={0.3} />
