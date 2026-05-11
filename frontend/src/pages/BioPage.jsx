@@ -101,7 +101,7 @@ const BioPage = ({ bioPage, setBioPage }) => {
       <div className="flex flex-col md:flex-row justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black font-display tracking-tight mb-2">Bio Page</h1>
-          <p className="text-white/40 text-sm">Your personal link-in-bio hub: <span className="text-purple-light font-bold">/@{bioPage.username}</span></p>
+          <p className="text-white/40 text-sm">Your personal link-in-bio hub: <span className="text-purple-light font-bold">kkoneurl.vercel.app/@{bioPage.username || 'username'}</span></p>
         </div>
         <div className="flex gap-3">
           <button className="btn btn-secondary !py-2 !px-4 text-xs font-bold uppercase tracking-widest"><Eye size={14} /> Preview</button>
