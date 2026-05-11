@@ -19,13 +19,20 @@ app.use('/api/links', require('./routes/link.routes'));
 // 🚀 Root Level Redirection
 const { redirectUrl } = require('./controllers/link.controller');
 
-// 1. Ignore static files, system routes, and Bio Pages (@username)
+// 1. Redirect Bio Pages and System routes to the frontend
 app.get('/:code', (req, res, next) => {
   const { code } = req.params;
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://kkoneurlorig.vercel.app';
   const systemRoutes = ['api', 'dashboard', 'links', 'analytics', 'qr', 'bio', 'settings', 'login', '404'];
   
-  if (code.includes('.') || systemRoutes.includes(code) || code.startsWith('@')) {
-    return next();
+  // If it's a Bio Page (@username)
+  if (code.startsWith('@')) {
+    return res.redirect(`${FRONTEND_URL}/${code}`);
+  }
+
+  // If it's a system route or has a file extension
+  if (code.includes('.') || systemRoutes.includes(code)) {
+    return res.redirect(`${FRONTEND_URL}/${code}`);
   }
 
   // 2. Process as short link
