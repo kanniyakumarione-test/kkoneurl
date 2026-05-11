@@ -19,20 +19,16 @@ app.use('/api/links', require('./routes/link.routes'));
 // 🚀 Root Level Redirection
 const { redirectUrl } = require('./controllers/link.controller');
 
-// 1. Ignore static files and system routes
+// 1. Ignore static files, system routes, and Bio Pages (@username)
 app.get('/:code', (req, res, next) => {
   const { code } = req.params;
   const systemRoutes = ['api', 'dashboard', 'links', 'analytics', 'qr', 'bio', 'settings', 'login', '404'];
-  if (code.includes('.') || systemRoutes.includes(code)) return next();
   
-  // 2. Handle Bio Pages (@username) - Redirect to frontend public bio page
-  if (code.startsWith('@')) {
-    const username = code.substring(1);
-    // In production, this should point to your Vercel frontend URL
-    return res.redirect(`https://kkoneurl.vercel.app/@/${username}`);
+  if (code.includes('.') || systemRoutes.includes(code) || code.startsWith('@')) {
+    return next();
   }
 
-  // 3. Process as short link
+  // 2. Process as short link
   redirectUrl(req, res, next);
 });
 
