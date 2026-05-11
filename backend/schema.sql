@@ -9,6 +9,7 @@ CREATE TABLE users (
   avatar TEXT,
   theme TEXT DEFAULT 'dark-purple',
   bio_links JSONB DEFAULT '[]'::jsonb,
+  username_last_changed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   settings JSONB DEFAULT '{"emailNotifs": true, "publicProfile": true}'::jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );

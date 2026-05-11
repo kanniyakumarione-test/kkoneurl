@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, GripVertical, ExternalLink, Eye, Palette, Save } from 'lucide-react';
+import { Plus, Trash2, GripVertical, ExternalLink, Eye, Palette, Save, AlertCircle } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import * as api from '../api';
 
@@ -20,14 +20,14 @@ const BioPreview = ({ bioPage, theme }) => {
         <div className="w-16 h-16 rounded-full border-2 mt-8 mb-2 flex items-center justify-center bg-white/5 overflow-hidden" style={{ borderColor: t.accent }}>
           {bioPage.avatar ? <img src={bioPage.avatar} className="w-full h-full object-cover" /> : <span className="text-2xl">👤</span>}
         </div>
-        <p className="text-sm font-bold text-white">{bioPage.displayName}</p>
-        <p className="text-[10px] text-white/50 text-center mb-4">{bioPage.bio}</p>
+        <p className="text-sm font-bold text-white text-center truncate w-full">{bioPage.displayName}</p>
+        <p className="text-[10px] text-white/50 text-center mb-4 leading-relaxed">{bioPage.bio}</p>
         
         <div className="w-full space-y-2">
           {bioPage.links.map(link => (
             <div key={link.id} className="w-full p-2.5 rounded-xl border border-white/10 bg-white/5 flex items-center gap-2 transition-all hover:scale-[1.02]" style={{ borderColor: `${link.color}30` }}>
               <span className="text-xs">{link.icon}</span>
-              <span className="text-[10px] font-bold text-white flex-1">{link.label}</span>
+              <span className="text-[10px] font-bold text-white flex-1 truncate">{link.label}</span>
               <ExternalLink size={10} className="text-white/20" />
             </div>
           ))}
@@ -44,19 +44,40 @@ const BioPage = ({ bioPage, setBioPage }) => {
   const [activeTab, setActiveTab] = useState('links');
   const [newLink, setNewLink] = useState({ label: '', url: '', icon: '🔗', color: '#6c63ff' });
   const [saving, setSaving] = useState(false);
+  
+  // Tracking username change limits
+  const [originalUsername, setOriginalUsername] = useState('');
+  const [usernameLastChanged, setUsernameLastChanged] = useState(null);
+  const [canChangeUsername, setCanChangeUsername] = useState(true);
+  const [daysRemaining, setDaysRemaining] = useState(0);
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
         const { data } = await api.getProfile();
-        setBioPage({
+        const profile = {
           username: data.username || '',
           displayName: data.display_name || '',
           bio: data.bio || '',
           avatar: data.avatar || '',
           theme: data.theme || 'dark-purple',
           links: data.bio_links || []
-        });
+        };
+        setBioPage(profile);
+        setOriginalUsername(profile.username);
+        
+        // Calculate 60-day limit
+        if (data.username_last_changed) {
+          const lastChanged = new Date(data.username_last_changed);
+          const sixtyDaysInMs = 60 * 24 * 60 * 60 * 1000;
+          const now = new Date();
+          const diff = now - lastChanged;
+          
+          if (diff < sixtyDaysInMs) {
+            setCanChangeUsername(false);
+            setDaysRemaining(Math.ceil((sixtyDaysInMs - diff) / (24 * 60 * 60 * 1000)));
+          }
+        }
       } catch (err) {
         console.error('Failed to load profile', err);
       }
@@ -65,9 +86,14 @@ const BioPage = ({ bioPage, setBioPage }) => {
   }, []);
 
   const handleSave = async () => {
+    // Prevent save if username changed illegally
+    if (bioPage.username !== originalUsername && !canChangeUsername) {
+      return toast(`You can change your username in ${daysRemaining} days.`, 'error');
+    }
+
     setSaving(true);
     try {
-      await api.updateProfile({
+      const response = await api.updateProfile({
         username: bioPage.username,
         displayName: bioPage.displayName,
         bio: bioPage.bio,
@@ -75,12 +101,31 @@ const BioPage = ({ bioPage, setBioPage }) => {
         theme: bioPage.theme,
         bio_links: bioPage.links
       });
+      
       toast('Bio page saved successfully! ✨', 'success');
+      setOriginalUsername(bioPage.username);
+      // Refresh limit if username was changed
+      if (response.data?.username_last_changed) {
+          const lastChanged = new Date(response.data.username_last_changed);
+          const sixtyDaysInMs = 60 * 24 * 60 * 60 * 1000;
+          const diff = new Date() - lastChanged;
+          if (diff < sixtyDaysInMs) {
+            setCanChangeUsername(false);
+            setDaysRemaining(Math.ceil((sixtyDaysInMs - diff) / (24 * 60 * 60 * 1000)));
+          }
+      }
     } catch (err) {
-      toast('Failed to save bio page', 'error');
+      const message = err.response?.data?.message || 'Failed to save bio page';
+      toast(message, 'error');
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleUsernameChange = (val) => {
+    // 🛠️ Automatic Sanitization: spaces to underscores, lowercase only
+    const sanitized = val.replace(/\s+/g, '_').toLowerCase();
+    setBioPage(prev => ({ ...prev, username: sanitized }));
   };
 
   const addLink = () => {
@@ -185,19 +230,36 @@ const BioPage = ({ bioPage, setBioPage }) => {
 
               {activeTab === 'profile' && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Username</label>
-                      <input className="input" value={bioPage.username} onChange={e => updateField('username', e.target.value)} />
+                      <div className="flex justify-between items-center">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Username</label>
+                        {!canChangeUsername && (
+                          <span className="text-[9px] font-bold text-pink flex items-center gap-1">
+                             <AlertCircle size={10} /> Locked for {daysRemaining}d
+                          </span>
+                        )}
+                      </div>
+                      <div className="relative group">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 font-bold">@</span>
+                        <input 
+                          className={`input !pl-8 ${!canChangeUsername ? 'opacity-50 cursor-not-allowed bg-white/5' : ''}`} 
+                          value={bioPage.username} 
+                          onChange={e => handleUsernameChange(e.target.value)}
+                          disabled={!canChangeUsername}
+                          placeholder="yourname"
+                        />
+                      </div>
+                      <p className="text-[9px] text-white/20 italic">Username can only be changed once every 60 days.</p>
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Display Name</label>
-                      <input className="input" value={bioPage.displayName} onChange={e => updateField('displayName', e.target.value)} />
+                      <input className="input" value={bioPage.displayName} onChange={e => updateField('displayName', e.target.value)} placeholder="Full Name" />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Bio Description</label>
-                    <textarea className="input min-h-[100px]" value={bioPage.bio} onChange={e => updateField('bio', e.target.value)} />
+                    <textarea className="input min-h-[100px]" value={bioPage.bio} onChange={e => updateField('bio', e.target.value)} placeholder="Tell the world about yourself..." />
                   </div>
                 </div>
               )}

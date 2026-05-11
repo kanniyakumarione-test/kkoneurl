@@ -44,7 +44,6 @@ exports.getProfile = async (req, res) => {
   try {
     const { data: user, error } = await supabase.from('users').select('*').eq('id', req.user.id).single();
     
-    // 🐣 Auto-provision profile if it doesn't exist
     if (error && (error.code === 'PGRST116' || error.message?.includes('not found'))) {
       const { data: newUser, error: createError } = await supabase.from('users').insert([{
         id: req.user.id,
@@ -53,10 +52,7 @@ exports.getProfile = async (req, res) => {
         username: 'user_' + Math.random().toString(36).substring(2, 7)
       }]).select().single();
       
-      if (createError) {
-        console.error('CRITICAL: Failed to auto-provision profile:', createError);
-        return res.status(500).json({ message: 'Profile setup failed', details: createError.message });
-      }
+      if (createError) throw createError;
       return res.json(newUser);
     }
     
@@ -70,20 +66,43 @@ exports.getProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { displayName, bio, avatar, theme, bio_links, username } = req.body;
+    const { displayName, bio, avatar, theme, bio_links, username, settings } = req.body;
     
+    // 🛡️ Username Change Policy (60 Days)
+    const { data: current, error: fetchError } = await supabase.from('users').select('username, username_last_changed').eq('id', req.user.id).single();
+    if (fetchError) throw fetchError;
+
+    let updateData = {
+      display_name: displayName,
+      bio,
+      avatar,
+      theme,
+      bio_links,
+      settings, // ⚙️ Store preferences
+      email: req.user.email
+    };
+
+    if (username && username !== current.username) {
+      const lastChanged = new Date(current.username_last_changed);
+      const sixtyDaysInMs = 60 * 24 * 60 * 60 * 1000;
+      const now = new Date();
+
+      if (now - lastChanged < sixtyDaysInMs) {
+        const daysRemaining = Math.ceil((sixtyDaysInMs - (now - lastChanged)) / (24 * 60 * 60 * 1000));
+        return res.status(403).json({ 
+          message: `Username can only be changed once every 60 days. Wait ${daysRemaining} more days.`,
+          daysRemaining 
+        });
+      }
+
+      updateData.username = username.replace(/\s+/g, '_').toLowerCase();
+      updateData.username_last_changed = now.toISOString();
+    }
+
     const { data, error } = await supabase
       .from('users')
-      .upsert({
-        id: req.user.id,
-        email: req.user.email,
-        display_name: displayName,
-        username,
-        bio,
-        avatar,
-        theme,
-        bio_links
-      }, { onConflict: 'id' })
+      .update(updateData)
+      .eq('id', req.user.id)
       .select()
       .single();
 
@@ -95,12 +114,33 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
+exports.deleteAccount = async (req, res) => {
+  try {
+    // 1. Delete all user links (Cascade might handle this but we do it explicitly to be safe)
+    await supabase.from('links').delete().eq('user_id', req.user.id);
+    
+    // 2. Delete user profile
+    const { error } = await supabase.from('users').delete().eq('id', req.user.id);
+    if (error) throw error;
+
+    res.json({ message: 'Account deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 exports.getPublicProfile = async (req, res) => {
   try {
     const { username } = req.params;
-    const { data, error } = await supabase.from('users').select('display_name, bio, avatar, theme, bio_links').eq('username', username).single();
+    const { data, error } = await supabase.from('users').select('display_name, bio, avatar, theme, bio_links, settings').eq('username', username).single();
     
     if (error || !data) return res.status(404).json({ message: 'Profile not found' });
+    
+    // 🛡️ Respect "Public Profile" setting
+    if (data.settings && data.settings.publicProfile === false) {
+        return res.status(403).json({ message: 'This profile is private' });
+    }
+    
     res.json(data);
   } catch (err) {
     res.status(500).json({ message: err.message });
