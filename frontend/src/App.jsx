@@ -13,6 +13,7 @@ import BioPage from './pages/BioPage';
 import Settings from './pages/Settings';
 import PublicBio from './pages/PublicBio';
 import Auth from './pages/Auth';
+import PasswordGate from './pages/PasswordGate';
 import CreateLinkModal from './components/CreateLinkModal';
 import * as api from './api';
 import { useToast } from './context/ToastContext';
@@ -172,6 +173,7 @@ function App() {
           </PrivateRoute>
         } />
 
+        <Route path="/p/:code" element={<PasswordGate />} />
         <Route path="/:username" element={<PublicBio />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

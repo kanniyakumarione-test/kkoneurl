@@ -30,12 +30,19 @@ exports.shortenUrl = async (req, res) => {
 exports.redirectUrl = async (req, res) => {
   try {
     const { code } = req.params;
+    const { password } = req.query;
+
     if (!code) return res.redirect('https://kkoneurlorig.vercel.app');
 
     const { data: link, error } = await supabase.from('links').select('*').eq('short_code', code).single();
 
     if (error || !link || !link.is_active) {
-      return res.redirect('/404');
+      return res.redirect('https://kkoneurlorig.vercel.app/404');
+    }
+
+    // 🛡️ Password Protection Gate
+    if (link.password && link.password !== password) {
+      return res.redirect(`https://kkoneurlorig.vercel.app/p/${code}`);
     }
 
     // Simplified Tracking for Debugging
