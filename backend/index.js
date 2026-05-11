@@ -41,7 +41,7 @@ app.get('/404', (req, res) => {
   res.status(404).send('<h1>404 - Link Not Found</h1><p>The link you followed is inactive or does not exist.</p><a href="/">Go Home</a>');
 });
 
-app.get('/', (req, res) => res.json({ message: 'kkoneurl API v1.0 (Supabase Powered)' }));
+// The frontend handles the root / via Vercel routing
 
 const PORT = process.env.PORT || 5000;
 
