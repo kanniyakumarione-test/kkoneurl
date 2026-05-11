@@ -25,7 +25,8 @@ const QRCode = ({ links }) => {
   const [customUrl, setCustomUrl] = useState('');
 
   const link = links.find(l => l._id === selected) || links[0];
-  const qrText = useCustom ? (customUrl || 'https://kkone.url') : `https://${link?.shortUrl || 'kkone.url'}`;
+  const domain = 'kkoneurl.vercel.app';
+  const qrText = useCustom ? (customUrl || `https://${domain}`) : `https://${domain}/${link?.short_code || ''}`;
   const qrSrc = getQRUrl(qrText, size, style.fg, style.bg);
 
   const handleDownload = async () => {
@@ -67,7 +68,7 @@ const QRCode = ({ links }) => {
             ) : (
               <select className="input" value={selected} onChange={e => setSelected(e.target.value)}>
                 {links.map(l => (
-                  <option key={l._id} value={l._id}>{l.title || l.shortCode}</option>
+                  <option key={l._id} value={l._id}>{l.title || l.short_code}</option>
                 ))}
               </select>
             )}
@@ -110,7 +111,7 @@ const QRCode = ({ links }) => {
             <div className="p-8 space-y-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold">{useCustom ? 'Custom Link' : (link?.title || link?.shortCode)}</h3>
+                  <h3 className="font-bold">{useCustom ? 'Custom Link' : (link?.title || link?.short_code)}</h3>
                   <p className="text-xs text-purple-light/70 font-medium truncate max-w-[240px]">{qrText}</p>
                 </div>
                 <div className="flex gap-2">
