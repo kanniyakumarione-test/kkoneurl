@@ -4,6 +4,7 @@ import {
   Zap, ArrowRight, Link2, BarChart3, QrCode, Globe,
   Smartphone, ChevronRight, Star, Users, Activity, Shield
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import * as api from '../api';
 
 const FEATURES = [
@@ -21,6 +22,7 @@ const Landing = () => {
   const [shortened, setShortened] = useState('');
   const [copied, setCopied] = useState(false);
   const [globalStats, setGlobalStats] = useState({ totalLinks: '1.2k+', totalClicks: '45k+', activeUsers: '850+' });
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,9 +30,9 @@ const Landing = () => {
       try {
         const { data } = await api.fetchGlobalStats();
         setGlobalStats({
-          totalLinks: data.totalLinks.toLocaleString() + '+',
-          totalClicks: (data.totalClicks / 1000).toFixed(1) + 'k+',
-          activeUsers: data.activeUsers.toLocaleString() + '+'
+          totalLinks: (data.totalLinks || 0).toLocaleString() + '+',
+          totalClicks: ((data.totalClicks || 0) / 1000).toFixed(1) + 'k+',
+          activeUsers: (data.activeUsers || 0).toLocaleString() + '+'
         });
       } catch (err) {
         console.error('Failed to load stats');
@@ -48,10 +50,23 @@ const Landing = () => {
 
   const handleShorten = async () => {
     if (!url.trim()) return;
+    
+    if (!user) {
+      // Redirect to login but keep the URL in state to shorten after login
+      navigate('/login', { state: { pendingUrl: url } });
+      return;
+    }
+
     setLoading(true);
-    await new Promise(r => setTimeout(r, 900));
-    setShortened(`kkone.url/nova42`);
-    setLoading(false);
+    try {
+      const { data } = await api.createLink({ originalUrl: url });
+      const baseUrl = window.location.origin.replace('https://', '').replace('http://', '');
+      setShortened(`${baseUrl}/${data.shortCode}`);
+    } catch (err) {
+      console.error('Shorten error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCopy = () => {

@@ -3,14 +3,14 @@ import { X, Link2, Lock, Clock, Tag, Globe, Smartphone, Zap, Check, Eye, EyeOff 
 import { useToast } from '../context/ToastContext';
 import { generateId, generateSlug } from '../store/linksStore';
 
-const CreateLinkModal = ({ onClose, onAdd }) => {
+const CreateLinkModal = ({ onClose, onAdd, initialUrl }) => {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [createdLink, setCreatedLink] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
-    originalUrl: '',
+    originalUrl: initialUrl || '',
     customSlug: '',
     title: '',
     password: '',

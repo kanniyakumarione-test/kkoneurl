@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Zap, Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 
 const Auth = () => {
+  const location = useLocation();
+  const pendingUrl = location.state?.pendingUrl;
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +27,7 @@ const Auth = () => {
         await register(form.email, form.password, form.name);
         toast('Account created!', 'success');
       }
-      navigate('/dashboard');
+      navigate('/dashboard', { state: { pendingUrl } });
     } catch (err) {
       toast(err.response?.data?.message || 'Authentication failed', 'error');
     } finally {

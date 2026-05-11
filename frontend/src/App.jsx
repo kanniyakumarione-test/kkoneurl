@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { INITIAL_BIO_PAGE } from './store/linksStore';
 import Sidebar from './components/Sidebar';
@@ -43,12 +43,23 @@ const AppLayout = ({ children, onShorten, links }) => {
 };
 
 function App() {
+  const location = useLocation();
   const { user } = useAuth();
   const toast = useToast();
   const [links, setLinks] = useState([]);
   const [bioPage, setBioPage] = useState(INITIAL_BIO_PAGE);
   const [showCreate, setShowCreate] = useState(false);
+  const [initialUrl, setInitialUrl] = useState('');
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (location.state?.pendingUrl && user) {
+      setInitialUrl(location.state.pendingUrl);
+      setShowCreate(true);
+      // Clear state to avoid reopening
+      window.history.replaceState({}, document.title);
+    }
+  }, [location, user]);
 
   useEffect(() => {
     const loadLinks = async () => {
@@ -86,7 +97,7 @@ function App() {
   const deleteLink = async (id) => {
     try {
       await api.deleteLink(id);
-      setLinks(prev => prev.filter(l => l._id !== id));
+      setLinks(prev => prev.filter(l => (l._id || l.id) !== id));
       toast('Link deleted', 'info');
     } catch (err) {
       toast('Delete failed', 'error');
@@ -96,7 +107,7 @@ function App() {
   const toggleLink = async (id) => {
     try {
       const { data } = await api.toggleLinkStatus(id);
-      setLinks(prev => prev.map(l => l._id === id ? data : l));
+      setLinks(prev => prev.map(l => (l._id || l.id) === id ? data : l));
     } catch (err) {
       toast('Toggle failed', 'error');
     }
@@ -110,7 +121,7 @@ function App() {
         
         <Route path="/dashboard" element={
           <PrivateRoute>
-            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+            <AppLayout onShorten={() => { setInitialUrl(''); setShowCreate(true); }} links={links}>
               <Dashboard links={links} />
             </AppLayout>
           </PrivateRoute>
@@ -118,12 +129,12 @@ function App() {
 
         <Route path="/links" element={
           <PrivateRoute>
-            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+            <AppLayout onShorten={() => { setInitialUrl(''); setShowCreate(true); }} links={links}>
               <Links 
                 links={links} 
                 onDelete={deleteLink} 
                 onToggle={toggleLink} 
-                onAdd={() => setShowCreate(true)} 
+                onAdd={() => { setInitialUrl(''); setShowCreate(true); }} 
               />
             </AppLayout>
           </PrivateRoute>
@@ -131,7 +142,7 @@ function App() {
 
         <Route path="/analytics" element={
           <PrivateRoute>
-            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+            <AppLayout onShorten={() => { setInitialUrl(''); setShowCreate(true); }} links={links}>
               <Analytics links={links} />
             </AppLayout>
           </PrivateRoute>
@@ -139,7 +150,7 @@ function App() {
 
         <Route path="/qr" element={
           <PrivateRoute>
-            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+            <AppLayout onShorten={() => { setInitialUrl(''); setShowCreate(true); }} links={links}>
               <QRCode links={links} />
             </AppLayout>
           </PrivateRoute>
@@ -147,7 +158,7 @@ function App() {
 
         <Route path="/bio" element={
           <PrivateRoute>
-            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+            <AppLayout onShorten={() => { setInitialUrl(''); setShowCreate(true); }} links={links}>
               <BioPage bioPage={bioPage} setBioPage={setBioPage} />
             </AppLayout>
           </PrivateRoute>
@@ -155,7 +166,7 @@ function App() {
 
         <Route path="/settings" element={
           <PrivateRoute>
-            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+            <AppLayout onShorten={() => { setInitialUrl(''); setShowCreate(true); }} links={links}>
               <Settings />
             </AppLayout>
           </PrivateRoute>
@@ -169,6 +180,7 @@ function App() {
         <CreateLinkModal
           onClose={() => setShowCreate(false)}
           onAdd={addLink}
+          initialUrl={initialUrl}
         />
       )}
     </>

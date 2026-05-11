@@ -19,6 +19,25 @@ app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/links', require('./routes/link.routes'));
 app.use('/api/notifications', require('./routes/notification.routes'));
 
+// Public Stats for Landing Page
+const supabase = require('./config/supabase');
+app.get('/api/public-stats', async (req, res) => {
+  try {
+    const { count: totalLinks } = await supabase.from('links').select('*', { count: 'exact', head: true });
+    const { data: clicks } = await supabase.from('links').select('clicks');
+    const totalClicks = clicks.reduce((acc, curr) => acc + (curr.clicks || 0), 0);
+    const { count: activeUsers } = await supabase.from('users').select('*', { count: 'exact', head: true });
+    
+    res.json({
+      totalLinks: totalLinks || 0,
+      totalClicks: totalClicks || 0,
+      activeUsers: activeUsers || 0
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // 4. Health Check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 
