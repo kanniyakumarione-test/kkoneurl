@@ -1,5 +1,4 @@
 const supabase = require('../config/supabase');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const generateToken = (id) => {
@@ -9,18 +8,7 @@ const generateToken = (id) => {
 exports.register = async (req, res) => {
   try {
     const { email, password, displayName } = req.body;
-    
-    // Check exists
-    const { data: existing } = await supabase.from('users').select('id').eq('email', email).single();
-    if (existing) return res.status(400).json({ message: 'User already exists' });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const { data: user, error } = await supabase.from('users').insert([{
-      email,
-      password: hashedPassword,
-      display_name: displayName
-    }]).select().single();
-
+    const { data: user, error } = await supabase.from('users').insert([{ email, password, display_name: displayName }]).select().single();
     if (error) throw error;
 
     res.status(201).json({
@@ -30,19 +18,16 @@ exports.register = async (req, res) => {
       token: generateToken(user.id)
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
 
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const { data: user, error } = await supabase.from('users').select('*').eq('email', email).single();
+    const { data: user, error } = await supabase.from('users').select('*').eq('email', email).eq('password', password).single();
     
-    if (error || !user) return res.status(401).json({ message: 'Invalid email or password' });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: 'Invalid email or password' });
+    if (error || !user) return res.status(401).json({ message: 'Invalid credentials' });
 
     res.json({
       _id: user.id,
@@ -51,35 +36,48 @@ exports.login = async (req, res) => {
       token: generateToken(user.id)
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
 
 exports.getProfile = async (req, res) => {
-  const { data: user, error } = await supabase.from('users').select('*').eq('id', req.user.id).single();
-  if (error) return res.status(404).json({ message: 'User not found' });
-  res.json(user);
+  try {
+    const { data: user, error } = await supabase.from('users').select('*').eq('id', req.user.id).single();
+    
+    // 🐣 Auto-provision profile if it doesn't exist
+    if (error && (error.code === 'PGRST116' || error.message?.includes('not found'))) {
+      const { data: newUser, error: createError } = await supabase.from('users').insert([{
+        id: req.user.id,
+        email: req.user.email,
+        display_name: req.user.email.split('@')[0],
+        username: 'user_' + Math.random().toString(36).substring(2, 7)
+      }]).select().single();
+      
+      if (createError) throw createError;
+      return res.json(newUser);
+    }
+    
+    if (error) throw error;
+    res.json(user);
+  } catch (err) {
+    console.error('Get Profile Error:', err);
+    res.status(500).json({ message: err.message });
+  }
 };
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { displayName, bio, avatar, theme, bio_links, username } = req.body;
-    const { data: user, error } = await supabase
+    const { data, error } = await supabase
       .from('users')
-      .update({ 
-        display_name: displayName, 
-        bio, 
-        avatar, 
-        theme, 
-        bio_links,
-        username 
-      })
-      .eq('id', req.user.id)
+      .upsert({
+        id: req.user.id,
+        ...req.body
+      }, { onConflict: 'id' })
       .select()
       .single();
 
     if (error) throw error;
-    res.json(user);
+    res.json(data);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -88,14 +86,10 @@ exports.updateProfile = async (req, res) => {
 exports.getPublicProfile = async (req, res) => {
   try {
     const { username } = req.params;
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('display_name, bio, avatar, theme, bio_links, username')
-      .eq('username', username)
-      .single();
-
-    if (error || !user) return res.status(404).json({ message: 'Profile not found' });
-    res.json(user);
+    const { data, error } = await supabase.from('users').select('display_name, bio, avatar, theme, bio_links').eq('username', username).single();
+    
+    if (error || !data) return res.status(404).json({ message: 'Profile not found' });
+    res.json(data);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
