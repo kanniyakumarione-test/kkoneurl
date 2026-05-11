@@ -33,9 +33,10 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current: '', new: '' });
-  
+
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -81,18 +82,6 @@ const Settings = () => {
     }
   };
 
-  const handleUpdatePassword = async () => {
-    if (!passwordForm.new) return toast('Please enter a new password', 'error');
-    try {
-      await api.updateProfile({ password: passwordForm.new });
-      toast('Password updated successfully!', 'success');
-      setPasswordForm({ current: '', new: '' });
-      setShowPassword(false);
-    } catch (err) {
-      toast('Failed to update password', 'error');
-    }
-  };
-
   const handleDeleteAccount = async () => {
     try {
       await api.deleteAccount();
@@ -100,6 +89,19 @@ const Settings = () => {
       logout();
     } catch (err) {
       toast('Failed to delete account', 'error');
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (!passwordForm.new) return toast('Please enter a new password', 'error');
+    try {
+      await api.updateProfile({ password: passwordForm.new });
+      toast('Password updated successfully! 🔐', 'success');
+      setPasswordForm({ current: '', new: '' });
+      setShowPasswordFields(false);
+      setShowPassword(false);
+    } catch (err) {
+      toast('Failed to update password', 'error');
     }
   };
 
@@ -147,36 +149,57 @@ const Settings = () => {
       </SettingsSection>
 
       <SettingsSection title="Security" icon={<Shield size={14} />}>
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-               <label className="text-[10px] font-bold text-white/20 uppercase tracking-widest">New Password</label>
-               <div className="relative">
-                 <input 
-                  type={showPassword ? "text" : "password"} 
-                  className="input w-full pr-12" 
-                  value={passwordForm.new} 
-                  onChange={e => setPasswordForm({...passwordForm, new: e.target.value})} 
-                  placeholder="••••••••"
-                 />
-                 <button 
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
-                 >
-                   {showPassword ? <Eye size={16} className="opacity-40" /> : <Shield size={16} className="opacity-40" />}
-                 </button>
-               </div>
-            </div>
-          </div>
-          <div className="flex justify-start pt-2">
+        {!showPasswordFields ? (
+          <div className="py-2">
             <button 
-              onClick={handleUpdatePassword}
-              className="btn btn-secondary !py-2 !px-4 text-[10px] font-bold uppercase tracking-widest"
+              onClick={() => setShowPasswordFields(true)}
+              className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-purple-light hover:text-white transition-colors"
             >
-              Update Password
+              <Shield size={14} /> Change Account Password
             </button>
           </div>
-        </div>
+        ) : (
+          <div className="space-y-6 animate-fade-in">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                 <label className="text-[10px] font-black uppercase tracking-widest text-white/40">New Password</label>
+                 <div className="relative">
+                   <input 
+                    type={showPassword ? "text" : "password"} 
+                    className="input w-full pr-12 !bg-bg-secondary border-white/10" 
+                    value={passwordForm.new} 
+                    onChange={e => setPasswordForm({...passwordForm, new: e.target.value})} 
+                    placeholder="Enter new password"
+                   />
+                   <button 
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
+                   >
+                     {showPassword ? <Eye size={16} /> : <Eye size={16} className="opacity-20" />}
+                   </button>
+                 </div>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <button 
+                onClick={handleUpdatePassword}
+                className="btn btn-primary !py-2 !px-6 text-[10px] font-bold uppercase tracking-widest"
+              >
+                Update Password
+              </button>
+              <button 
+                onClick={() => {
+                  setShowPasswordFields(false);
+                  setPasswordForm({ current: '', new: '' });
+                }}
+                className="btn btn-secondary !py-2 !px-6 text-[10px] font-bold uppercase tracking-widest"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </SettingsSection>
 
       <div className="flex justify-center pt-8">
