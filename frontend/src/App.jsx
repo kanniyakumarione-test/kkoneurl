@@ -1,0 +1,176 @@
+import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import { INITIAL_BIO_PAGE } from './store/linksStore';
+import Sidebar from './components/Sidebar';
+import Topbar from './components/Topbar';
+import Landing from './pages/Landing';
+import Dashboard from './pages/Dashboard';
+import Links from './pages/Links';
+import Analytics from './pages/Analytics';
+import QRCode from './pages/QRCode';
+import BioPage from './pages/BioPage';
+import Settings from './pages/Settings';
+import PublicBio from './pages/PublicBio';
+import Auth from './pages/Auth';
+import CreateLinkModal from './components/CreateLinkModal';
+import * as api from './api';
+import { useToast } from './context/ToastContext';
+
+const PrivateRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="h-screen w-full flex items-center justify-center bg-bg-primary">Loading...</div>;
+  return user ? children : <Navigate to="/login" />;
+};
+
+const AppLayout = ({ children, onShorten, links }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  return (
+    <div className="flex min-h-screen bg-bg-primary font-sans text-[#f0f0ff]">
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} links={links} />
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+        <Topbar
+          onMenuClick={() => setSidebarOpen(true)}
+          onShorten={onShorten}
+        />
+        <main className="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};
+
+function App() {
+  const { user } = useAuth();
+  const toast = useToast();
+  const [links, setLinks] = useState([]);
+  const [bioPage, setBioPage] = useState(INITIAL_BIO_PAGE);
+  const [showCreate, setShowCreate] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadLinks = async () => {
+      if (!user) {
+        setLinks([]);
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        setLoading(true);
+        const { data } = await api.fetchLinks();
+        setLinks(data);
+      } catch (err) {
+        console.error('Failed to fetch links:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadLinks();
+  }, [user]);
+
+  const addLink = async (newLinkData) => {
+    try {
+      const { data } = await api.createLink(newLinkData);
+      setLinks(prev => [data, ...prev]);
+      toast('Link created successfully!', 'success');
+    } catch (err) {
+      toast('Failed to create link', 'error');
+    }
+  };
+
+  const deleteLink = async (id) => {
+    try {
+      await api.deleteLink(id);
+      setLinks(prev => prev.filter(l => l._id !== id));
+      toast('Link deleted', 'info');
+    } catch (err) {
+      toast('Delete failed', 'error');
+    }
+  };
+
+  const toggleLink = async (id) => {
+    try {
+      const { data } = await api.toggleLinkStatus(id);
+      setLinks(prev => prev.map(l => l._id === id ? data : l));
+    } catch (err) {
+      toast('Toggle failed', 'error');
+    }
+  };
+
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Auth />} />
+        
+        <Route path="/dashboard" element={
+          <PrivateRoute>
+            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+              <Dashboard links={links} />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/links" element={
+          <PrivateRoute>
+            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+              <Links 
+                links={links} 
+                onDelete={deleteLink} 
+                onToggle={toggleLink} 
+                onAdd={() => setShowCreate(true)} 
+              />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/analytics" element={
+          <PrivateRoute>
+            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+              <Analytics links={links} />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/qr" element={
+          <PrivateRoute>
+            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+              <QRCode links={links} />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/bio" element={
+          <PrivateRoute>
+            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+              <BioPage bioPage={bioPage} setBioPage={setBioPage} />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/settings" element={
+          <PrivateRoute>
+            <AppLayout onShorten={() => setShowCreate(true)} links={links}>
+              <Settings />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+
+        <Route path="/@/:username" element={<PublicBio />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+
+      {showCreate && (
+        <CreateLinkModal
+          onClose={() => setShowCreate(false)}
+          onAdd={addLink}
+        />
+      )}
+    </>
+  );
+}
+
+export default App;

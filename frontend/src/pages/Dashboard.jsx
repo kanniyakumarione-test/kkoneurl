@@ -1,0 +1,142 @@
+import { useState, useMemo } from 'react';
+import {
+  TrendingUp, Link2, MousePointerClick, Users,
+  ArrowUpRight, Clock, Copy, ExternalLink, BarChart3
+} from 'lucide-react';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip, ResponsiveContainer
+} from 'recharts';
+import { useToast } from '../context/ToastContext';
+
+const StatCard = ({ icon, label, value, change, color, borderColor }) => (
+  <div className={`card relative overflow-hidden group hover:bg-bg-hover`}>
+    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${borderColor}`} />
+    <div className="flex items-center justify-between mb-4">
+      <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-${color}`}>
+        {icon}
+      </div>
+      {change !== 0 && (
+        <span className={`badge ${change >= 0 ? 'bg-green/10 text-green' : 'bg-pink/10 text-pink'}`}>
+          {change >= 0 ? '+' : ''}{change}%
+        </span>
+      )}
+    </div>
+    <div className="text-3xl font-black font-display tracking-tight mb-1">{value.toLocaleString()}</div>
+    <div className="text-sm text-white/40 font-medium">{label}</div>
+  </div>
+);
+
+const Dashboard = ({ links }) => {
+  const toast = useToast();
+  const [period, setPeriod] = useState('7d');
+
+  const totalClicks = useMemo(() => links.reduce((s, l) => s + l.clicks, 0), [links]);
+  const totalUnique = useMemo(() => links.reduce((s, l) => s + l.uniqueClicks, 0), [links]);
+  
+  const chartData = useMemo(() => {
+    const map = {};
+    links.forEach(link => {
+      link.dailyClicks.forEach(d => {
+        map[d.date] = (map[d.date] || 0) + d.clicks;
+      });
+    });
+    return Object.entries(map).map(([date, clicks]) => ({ date, clicks }));
+  }, [links]);
+
+  const topLinks = [...links].sort((a, b) => b.clicks - a.clicks).slice(0, 5);
+
+  return (
+    <div className="space-y-8 animate-fade-in max-w-7xl">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black font-display tracking-tight mb-2">Dashboard</h1>
+          <p className="text-white/40 text-sm">Welcome back! Tracking {links.length} active links.</p>
+        </div>
+        <div className="flex bg-bg-card border border-white/10 p-1 rounded-xl">
+          {['7d', '30d', '90d'].map(p => (
+            <button
+              key={p}
+              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${period === p ? 'bg-purple text-white shadow-lg shadow-purple/20' : 'text-white/40 hover:text-white'}`}
+              onClick={() => setPeriod(p)}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard icon={<MousePointerClick size={20} />} label="Total Clicks" value={totalClicks} change={0} color="purple" borderColor="from-purple to-purple-light" />
+        <StatCard icon={<Users size={20} />} label="Unique Visitors" value={totalUnique} change={0} color="cyan" borderColor="from-cyan to-purple" />
+        <StatCard icon={<Link2 size={20} />} label="Active Links" value={links.length} change={0} color="green" borderColor="from-green to-cyan" />
+        <StatCard icon={<TrendingUp size={20} />} label="Avg. CTR" value={links.length ? ((totalClicks / (links.length * 100)) * 100).toFixed(1) + '%' : '0%'} change={0} color="pink" borderColor="from-pink to-orange" />
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Main Chart */}
+        <div className="card lg:col-span-2">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h3 className="font-bold">Click Traffic</h3>
+              <p className="text-xs text-white/30">Last 7 days data</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-purple rounded-full animate-pulse" />
+              <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">Realtime</span>
+            </div>
+          </div>
+          <div className="h-[240px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="pgrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6c63ff" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#6c63ff" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <XAxis dataKey="date" hide />
+                <YAxis hide />
+                <Tooltip 
+                  contentStyle={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                  itemStyle={{ color: '#9b94ff', fontWeight: 'bold' }}
+                />
+                <Area type="monotone" dataKey="clicks" stroke="#6c63ff" strokeWidth={3} fillOpacity={1} fill="url(#pgrad)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Top Links */}
+        <div className="card">
+          <h3 className="font-bold mb-6">Top Links</h3>
+          <div className="space-y-4">
+            {topLinks.map((link, i) => (
+              <div key={link.id} className="flex items-center gap-4 group">
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs font-black text-white/20 group-hover:text-purple transition-colors">
+                  #{i + 1}
+                </div>
+                <div className="flex-1 min-width-0">
+                  <p className="text-sm font-bold truncate">{link.title || link.shortCode}</p>
+                  <p className="text-[11px] text-purple-light/70 truncate">{link.shortUrl}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-black">{link.clicks.toLocaleString()}</p>
+                  <p className="text-[10px] text-white/20 uppercase font-bold tracking-widest">clicks</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="w-full mt-8 py-3 rounded-xl border border-white/5 text-xs font-bold text-white/30 hover:bg-white/5 hover:text-white transition-all uppercase tracking-widest">
+            View All Links
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;

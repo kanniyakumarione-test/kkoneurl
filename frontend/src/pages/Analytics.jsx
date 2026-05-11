@@ -1,0 +1,128 @@
+import { useState } from 'react';
+import { BarChart3, Globe, Smartphone, Monitor, Tablet, TrendingUp } from 'lucide-react';
+import {
+  AreaChart, Area, BarChart, Bar, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from 'recharts';
+
+const COLORS = ['#6c63ff', '#00d4ff', '#43e97b', '#ff6584', '#ff9a3c'];
+
+const Analytics = ({ links }) => {
+  const [selected, setSelected] = useState(links[0]?._id || '');
+  const link = links.find(l => l._id === selected) || links[0];
+
+  if (!link) return <div className="p-20 text-center text-white/40 font-bold">No links to analyze.</div>;
+
+  const deviceData = [
+    { name: 'Mobile', value: link.deviceStats.mobile },
+    { name: 'Desktop', value: link.deviceStats.desktop },
+    { name: 'Tablet', value: link.deviceStats.tablet },
+  ];
+
+  const geoData = Object.entries(link.geoStats)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([country, clicks]) => ({ country, clicks }));
+
+  const browserData = Object.entries(link.browserStats).map(([name, value]) => ({ name, value }));
+
+  return (
+    <div className="space-y-8 animate-fade-in max-w-7xl">
+      <div className="flex flex-col md:flex-row justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black font-display tracking-tight mb-2">Analytics</h1>
+          <p className="text-white/40 text-sm">Deep insights for your short links</p>
+        </div>
+        <select
+          className="input !w-auto min-w-[240px] !bg-bg-card border-white/5"
+          value={selected}
+          onChange={e => setSelected(e.target.value)}
+        >
+          {links.map(l => (
+            <option key={l._id} value={l._id}>{l.title || l.shortCode}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Link Banner */}
+      <div className="card !bg-gradient-to-br from-bg-card to-bg-secondary border-purple/20 flex flex-col md:flex-row items-center gap-6">
+        <div className="w-16 h-16 bg-gradient-to-tr from-purple to-cyan rounded-2xl flex items-center justify-center text-3xl font-black text-white shadow-xl shadow-purple/20">
+          {link.title?.[0] || '🔗'}
+        </div>
+        <div className="flex-1 text-center md:text-left">
+          <h2 className="text-xl font-bold mb-1">{link.title}</h2>
+          <p className="text-purple-light font-bold">{link.shortUrl}</p>
+        </div>
+        <div className="flex items-center gap-8 px-6 py-4 bg-white/5 rounded-2xl border border-white/5">
+          {[
+            { val: link.clicks, label: 'Clicks' },
+            { val: link.uniqueClicks, label: 'Unique' },
+            { val: `${Math.round((link.uniqueClicks/link.clicks)*100)}%`, label: 'CTR' }
+          ].map((s, i) => (
+            <div key={i} className="text-center">
+              <p className="text-xl font-black font-display">{s.val.toLocaleString()}</p>
+              <p className="text-[10px] font-bold text-white/30 uppercase tracking-widest mt-1">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid lg:grid-cols-2 gap-6">
+        {/* Trend */}
+        <div className="card">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="font-bold">Click Trend</h3>
+            <span className="badge bg-green/10 text-green"><TrendingUp size={12} /> +14.2%</span>
+          </div>
+          <div className="h-[220px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={link.dailyClicks}>
+                <defs>
+                  <linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#6c63ff" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#6c63ff" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                <XAxis dataKey="date" hide />
+                <YAxis hide />
+                <Tooltip contentStyle={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} />
+                <Area type="monotone" dataKey="clicks" stroke="#6c63ff" strokeWidth={3} fill="url(#aG)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Geo */}
+        <div className="card">
+          <div className="flex items-center gap-2 mb-8">
+            <Globe size={18} className="text-cyan" />
+            <h3 className="font-bold">Top Countries</h3>
+          </div>
+          <div className="space-y-4">
+            {geoData.map((g, i) => (
+              <div key={g.country}>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-white/60">{g.country}</span>
+                  <span className="font-black">{g.clicks.toLocaleString()}</span>
+                </div>
+                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full rounded-full transition-all duration-1000" 
+                    style={{ 
+                      width: `${Math.round((g.clicks / geoData[0].clicks) * 100)}%`,
+                      backgroundColor: COLORS[i % COLORS.length]
+                    }} 
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Analytics;
