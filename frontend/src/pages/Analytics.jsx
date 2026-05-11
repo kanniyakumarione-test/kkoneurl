@@ -80,7 +80,7 @@ const Analytics = ({ links }) => {
             <h3 className="font-bold">Click Trend</h3>
             <span className="badge bg-green/10 text-green"><TrendingUp size={12} /> +14.2%</span>
           </div>
-          <div style={{ height: 220, width: '100%' }}>
+          <div style={{ height: 220, width: '100%', minHeight: 220, minWidth: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={dailyClicks}>
                 <defs>
