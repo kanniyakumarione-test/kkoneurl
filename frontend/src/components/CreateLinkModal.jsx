@@ -7,6 +7,7 @@ const CreateLinkModal = ({ onClose, onAdd }) => {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
+  const [createdLink, setCreatedLink] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     originalUrl: '',
@@ -20,26 +21,24 @@ const CreateLinkModal = ({ onClose, onAdd }) => {
   const handleCreate = async () => {
     if (!form.originalUrl.trim()) return toast('URL is required', 'error');
     setLoading(true);
-    await new Promise(r => setTimeout(r, 800));
     
-    const slug = form.customSlug.trim() || generateSlug(form.originalUrl);
-    onAdd({
-      id: generateId(),
-      ...form,
-      shortCode: slug,
-      shortUrl: `kkone.url/${slug}`,
-      clicks: 0,
-      uniqueClicks: 0,
-      createdAt: new Date().toISOString(),
-      isActive: true,
-      tags: form.tags ? form.tags.split(',') : [],
-      dailyClicks: Array.from({length: 7}, () => ({date: '', clicks: 0})),
-      geoStats: {},
-      deviceStats: {mobile: 0, desktop: 0, tablet: 0},
-      browserStats: {}
-    });
-    setLoading(false);
-    setStep(2);
+    try {
+      const newLink = await onAdd({
+        originalUrl: form.originalUrl,
+        customSlug: form.customSlug.trim(),
+        title: form.title,
+        password: form.password,
+        expiresAt: form.expiresAt,
+        tags: form.tags
+      });
+      
+      setCreatedLink(newLink);
+      setStep(2);
+    } catch (err) {
+      // Toast handled in App.jsx
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -125,11 +124,11 @@ const CreateLinkModal = ({ onClose, onAdd }) => {
                 <Check size={40} className="text-green" />
               </div>
               <div className="card !bg-bg-secondary border-purple/30">
-                <p className="text-purple-light font-black text-2xl">kkone.url/{form.customSlug || '...'}</p>
-                <p className="text-xs text-white/20 mt-2 truncate max-w-xs mx-auto">Redirects to {form.originalUrl}</p>
+                <p className="text-purple-light font-black text-2xl">kkone.url/{createdLink?.short_code}</p>
+                <p className="text-xs text-white/20 mt-2 truncate max-w-xs mx-auto">Redirects to {createdLink?.original_url}</p>
               </div>
               <div className="flex gap-4">
-                <button className="btn btn-secondary flex-1 !py-4" onClick={() => {navigator.clipboard.writeText(`kkone.url/${form.customSlug}`); toast('Copied!', 'success')}}>Copy Link</button>
+                <button className="btn btn-secondary flex-1 !py-4" onClick={() => {navigator.clipboard.writeText(`kkone.url/${createdLink?.short_code}`); toast('Copied!', 'success')}}>Copy Link</button>
                 <button className="btn btn-primary flex-1 !py-4" onClick={onClose}>Done</button>
               </div>
             </div>

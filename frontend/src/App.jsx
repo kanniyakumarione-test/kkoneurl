@@ -76,8 +76,10 @@ function App() {
       const { data } = await api.createLink(newLinkData);
       setLinks(prev => [data, ...prev]);
       toast('Link created successfully!', 'success');
+      return data;
     } catch (err) {
       toast('Failed to create link', 'error');
+      throw err;
     }
   };
 
