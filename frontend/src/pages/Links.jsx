@@ -59,6 +59,13 @@ const LinkCard = ({ link, onDelete, onToggle, onCopy }) => {
 
         {/* Actions */}
         <div className="flex flex-row md:flex-col justify-center gap-2">
+          <button 
+            onClick={() => onToggle(link._id)} 
+            className={`p-2.5 rounded-xl border transition-all ${active ? 'bg-green/10 border-green/20 text-green hover:bg-green/20' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'}`}
+            title={active ? 'Deactivate' : 'Activate'}
+          >
+            <div className={`w-2 h-2 rounded-full mx-auto ${active ? 'bg-green shadow-[0_0_8px_rgba(67,233,123,0.5)]' : 'bg-white/20'}`} />
+          </button>
           <button onClick={() => onCopy(`https://kkoneurl.vercel.app/${link.short_code}`)} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-white hover:border-purple/40 hover:bg-purple/10 transition-all" title="Copy">
             <Copy size={18} />
           </button>
@@ -94,9 +101,20 @@ const Links = ({ links, onDelete, onToggle, onAdd }) => {
     toast('Copied to clipboard!', 'success');
   };
 
-  const filtered = links.filter(l => 
-    !search || l.title?.toLowerCase().includes(search.toLowerCase()) || l.shortCode.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = links.filter(l => {
+    const matchesSearch = !search || 
+      l.title?.toLowerCase().includes(search.toLowerCase()) || 
+      l.short_code?.toLowerCase().includes(search.toLowerCase()) ||
+      l.original_url?.toLowerCase().includes(search.toLowerCase());
+    
+    const active = l.is_active ?? l.isActive ?? true;
+    const matchesFilter = 
+      filter === 'all' || 
+      (filter === 'active' && active) || 
+      (filter === 'inactive' && !active);
+    
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="space-y-8 animate-fade-in max-w-7xl">
