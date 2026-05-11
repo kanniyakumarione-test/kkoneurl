@@ -29,7 +29,12 @@ app.use('/api/links', require('./routes/link.routes'));
 // 5. 🚀 Root Level Redirection
 const { redirectUrl } = require('./controllers/link.controller');
 
-app.get('/:code', (req, res, next) => {
+app.get('/', (req, res) => {
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'https://kkoneurlorig.vercel.app';
+  res.redirect(FRONTEND_URL);
+});
+
+app.get('/:code', async (req, res, next) => {
   const { code } = req.params;
   const FRONTEND_URL = process.env.FRONTEND_URL || 'https://kkoneurlorig.vercel.app';
   
@@ -52,7 +57,7 @@ app.get('/:code', (req, res, next) => {
   if (code.includes('.')) return next();
 
   // Process as short link
-  redirectUrl(req, res, next);
+  await redirectUrl(req, res, next);
 });
 
 // 6. Proper 404 Fallback
