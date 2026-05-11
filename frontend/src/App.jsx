@@ -14,6 +14,7 @@ import Settings from './pages/Settings';
 import PublicBio from './pages/PublicBio';
 import Auth from './pages/Auth';
 import PasswordGate from './pages/PasswordGate';
+import RedirectHandler from './pages/RedirectHandler';
 import CreateLinkModal from './components/CreateLinkModal';
 import * as api from './api';
 import { useToast } from './context/ToastContext';
@@ -174,7 +175,8 @@ function App() {
         } />
 
         <Route path="/p/:code" element={<PasswordGate />} />
-        <Route path="/:username" element={<PublicBio />} />
+        <Route path="/@:username" element={<PublicBio />} />
+        <Route path="/:code" element={<RedirectHandler />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
