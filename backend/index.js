@@ -17,6 +17,7 @@ app.use(morgan('dev'));
 // 3. API Routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/links', require('./routes/link.routes'));
+app.use('/api/notifications', require('./routes/notification.routes'));
 
 // 4. Health Check
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
