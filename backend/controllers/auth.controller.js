@@ -158,7 +158,13 @@ exports.changePassword = async (req, res) => {
       .eq('id', req.user.id)
       .single();
     
-    if (fetchError || !user) throw new Error('User not found');
+    if (fetchError) {
+      console.error('Fetch User Error:', fetchError);
+      return res.status(500).json({ message: `Database error: ${fetchError.message}` });
+    }
+    if (!user) {
+      return res.status(404).json({ message: 'User profile not found' });
+    }
 
     // 2. Verify Old Password
     if (user.password !== oldPassword) {
