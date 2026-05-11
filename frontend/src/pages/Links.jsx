@@ -8,11 +8,12 @@ import { useToast } from '../context/ToastContext';
 const LinkCard = ({ link, onDelete, onToggle, onCopy }) => {
   const isExpired = link.expiresAt && new Date(link.expiresAt) < new Date();
 
-  return (
-    <div className={`
-      card !p-0 overflow-hidden group transition-all
-      ${!link.isActive ? 'opacity-60 grayscale' : 'hover:-translate-y-1'}
-    `}>
+    const active = link.is_active ?? link.isActive ?? true;
+    return (
+      <div className={`
+        card !p-0 overflow-hidden group transition-all
+        ${!active ? 'opacity-60 grayscale' : 'hover:-translate-y-1'}
+      `}>
       <div className="p-5 flex flex-col md:flex-row gap-6">
         {/* Favicon / Icon */}
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple to-purple-dark flex items-center justify-center text-xl font-black text-white shadow-lg shadow-purple/20 shrink-0">
@@ -22,7 +23,7 @@ const LinkCard = ({ link, onDelete, onToggle, onCopy }) => {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap mb-2">
-            <h3 className="font-bold text-lg leading-tight truncate">{link.title || link.shortCode}</h3>
+            <h3 className="font-bold text-lg leading-tight truncate">{link.title || link.short_code}</h3>
             {link.password && <span className="badge bg-orange/10 text-orange border border-orange/20"><Lock size={10} /> Protected</span>}
             {isExpired && <span className="badge bg-pink/10 text-pink border border-pink/20"><Clock size={10} /> Expired</span>}
           </div>
@@ -32,7 +33,7 @@ const LinkCard = ({ link, onDelete, onToggle, onCopy }) => {
               kkoneurl.vercel.app/{link.short_code}
             </a>
             <span className="text-white/20">→</span>
-            <span className="text-white/40 text-xs truncate max-w-[300px]">{link.originalUrl}</span>
+            <span className="text-white/40 text-xs truncate max-w-[300px]">{link.original_url || link.originalUrl}</span>
           </div>
 
           <div className="flex gap-2 flex-wrap">
@@ -47,18 +48,18 @@ const LinkCard = ({ link, onDelete, onToggle, onCopy }) => {
         {/* Analytics Summary */}
         <div className="flex gap-8 items-center bg-white/5 px-6 rounded-2xl border border-white/5">
           <div className="text-center">
-            <p className="text-lg font-black font-display leading-none">{link.clicks.toLocaleString()}</p>
+            <p className="text-lg font-black font-display leading-none">{(link.clicks || 0).toLocaleString()}</p>
             <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1">Clicks</p>
           </div>
           <div className="text-center">
-            <p className="text-lg font-black font-display leading-none">{Math.round((link.uniqueClicks / link.clicks) * 100) || 0}%</p>
+            <p className="text-lg font-black font-display leading-none">{Math.round(((link.unique_clicks || link.uniqueClicks || 0) / (link.clicks || 1)) * 100)}%</p>
             <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1">CTR</p>
           </div>
         </div>
 
         {/* Actions */}
         <div className="flex flex-row md:flex-col justify-center gap-2">
-          <button onClick={() => onCopy(link.shortUrl)} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-white hover:border-purple/40 hover:bg-purple/10 transition-all" title="Copy">
+          <button onClick={() => onCopy(`https://kkoneurl.vercel.app/${link.short_code}`)} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-white hover:border-purple/40 hover:bg-purple/10 transition-all" title="Copy">
             <Copy size={18} />
           </button>
           <button onClick={() => onDelete(link._id)} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-pink hover:border-pink/40 hover:bg-pink/10 transition-all" title="Delete">
@@ -70,9 +71,9 @@ const LinkCard = ({ link, onDelete, onToggle, onCopy }) => {
       {/* Toggle Row */}
       <div className="px-5 py-3 bg-white/5 border-t border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${link.isActive ? 'bg-green' : 'bg-white/20'}`} />
+          <div className={`w-2 h-2 rounded-full ${active ? 'bg-green' : 'bg-white/20'}`} />
           <span className="text-[11px] font-bold text-white/40 uppercase tracking-widest">
-            {link.isActive ? 'Live' : 'Inactive'}
+            {active ? 'Live' : 'Inactive'}
           </span>
         </div>
         <button className="text-xs font-bold text-purple-light hover:text-white transition-colors flex items-center gap-1">
