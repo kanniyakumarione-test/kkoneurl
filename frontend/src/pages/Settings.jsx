@@ -35,8 +35,8 @@ const Settings = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [passwordForm, setPasswordForm] = useState({ current: '', new: '' });
-
+  const [passwordForm, setPasswordForm] = useState({ old: '', new: '' });
+  const [passwordLock, setPasswordLock] = useState(null);
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -54,6 +54,15 @@ const Settings = () => {
           public: data.settings?.publicProfile ?? true,
           notifs: data.settings?.emailNotifs ?? true
         });
+
+        // 🛡️ Check Password Lock
+        const lastChanged = new Date(data.password_last_changed || 0);
+        const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+        const now = new Date();
+        if (now - lastChanged < thirtyDaysInMs) {
+          const days = Math.ceil((thirtyDaysInMs - (now - lastChanged)) / (24 * 60 * 60 * 1000));
+          setPasswordLock(days);
+        }
       } catch (err) {
         toast('Failed to load settings', 'error');
       } finally {
@@ -93,15 +102,19 @@ const Settings = () => {
   };
 
   const handleUpdatePassword = async () => {
-    if (!passwordForm.new) return toast('Please enter a new password', 'error');
+    if (!passwordForm.old || !passwordForm.new) return toast('Please fill in both fields', 'error');
     try {
-      await api.updateProfile({ password: passwordForm.new });
+      await api.changePassword({ 
+        oldPassword: passwordForm.old, 
+        newPassword: passwordForm.new 
+      });
       toast('Password updated successfully! 🔐', 'success');
-      setPasswordForm({ current: '', new: '' });
+      setPasswordForm({ old: '', new: '' });
       setShowPasswordFields(false);
       setShowPassword(false);
     } catch (err) {
-      toast('Failed to update password', 'error');
+      const msg = err.response?.data?.message || 'Failed to update password';
+      toast(msg, 'error');
     }
   };
 
@@ -151,16 +164,32 @@ const Settings = () => {
       <SettingsSection title="Security" icon={<Shield size={14} />}>
         {!showPasswordFields ? (
           <div className="py-2">
-            <button 
-              onClick={() => setShowPasswordFields(true)}
-              className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-purple-light hover:text-white transition-colors"
-            >
-              <Shield size={14} /> Change Account Password
-            </button>
+            {passwordLock ? (
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/20">
+                <Shield size={14} className="opacity-20" /> Password locked for {passwordLock} more days
+              </div>
+            ) : (
+              <button 
+                onClick={() => setShowPasswordFields(true)}
+                className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-purple-light hover:text-white transition-colors"
+              >
+                <Shield size={14} /> Change Account Password
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-6 animate-fade-in">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                 <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Current Password</label>
+                 <input 
+                  type="password" 
+                  className="input w-full !bg-bg-secondary border-white/10" 
+                  value={passwordForm.old} 
+                  onChange={e => setPasswordForm({...passwordForm, old: e.target.value})} 
+                  placeholder="Your current password"
+                 />
+              </div>
               <div className="space-y-2">
                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">New Password</label>
                  <div className="relative">

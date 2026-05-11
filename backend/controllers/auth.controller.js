@@ -146,3 +146,52 @@ exports.getPublicProfile = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    
+    // 1. Fetch current user data
+    const { data: user, error: fetchError } = await supabase
+      .from('users')
+      .select('password, password_last_changed')
+      .eq('id', req.user.id)
+      .single();
+    
+    if (fetchError || !user) throw new Error('User not found');
+
+    // 2. Verify Old Password
+    if (user.password !== oldPassword) {
+      return res.status(401).json({ message: 'Current password does not match' });
+    }
+
+    // 3. 🛡️ 30-Day Policy
+    const lastChanged = new Date(user.password_last_changed || 0);
+    const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+    const now = new Date();
+
+    if (now - lastChanged < thirtyDaysInMs) {
+      const daysRemaining = Math.ceil((thirtyDaysInMs - (now - lastChanged)) / (24 * 60 * 60 * 1000));
+      return res.status(403).json({ 
+        message: `Password can only be changed once every 30 days. Wait ${daysRemaining} more days.`,
+        daysRemaining 
+      });
+    }
+
+    // 4. Update Password
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ 
+        password: newPassword,
+        password_last_changed: now.toISOString()
+      })
+      .eq('id', req.user.id);
+
+    if (updateError) throw updateError;
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Change Password Error:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
