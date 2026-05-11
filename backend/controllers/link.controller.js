@@ -1,14 +1,9 @@
 const supabase = require('../config/supabase');
-const useragent = require('useragent');
-const requestIp = require('request-ip');
-const axios = require('axios');
 
 exports.shortenUrl = async (req, res) => {
   try {
     const { originalUrl, customSlug, title, password, expiresAt, tags } = req.body;
     const shortCode = customSlug || Math.random().toString(36).substring(2, 8);
-    
-    // Convert tags string to array if needed
     const tagsArray = Array.isArray(tags) ? tags : (tags ? tags.split(',').map(t => t.trim()) : []);
 
     const { data, error } = await supabase
@@ -25,13 +20,9 @@ exports.shortenUrl = async (req, res) => {
       .select()
       .single();
 
-    if (error) {
-      console.error('Database Insert Error:', error);
-      return res.status(500).json({ message: error.message, details: error.details });
-    }
+    if (error) throw error;
     res.status(201).json({ ...data, _id: data.id });
   } catch (err) {
-    console.error('Server Error:', err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -39,47 +30,23 @@ exports.shortenUrl = async (req, res) => {
 exports.redirectUrl = async (req, res) => {
   try {
     const { code } = req.params;
+    if (!code) return res.redirect('https://kkoneurlorig.vercel.app');
+
     const { data: link, error } = await supabase.from('links').select('*').eq('short_code', code).single();
 
-    if (error || !link || !link.is_active) return res.redirect('/404');
-
-    // 🕵️ Advanced Tracking Logic
-    const agent = useragent.parse(req.headers['user-agent']);
-    const ip = requestIp.getClientIp(req);
-    const today = new Date().toISOString().split('T')[0];
-
-    // 1. Device Stats
-    const device = agent.device.toString().toLowerCase().includes('mobile') ? 'mobile' : 'desktop';
-    const deviceStats = link.device_stats || { mobile: 0, desktop: 0, tablet: 0 };
-    deviceStats[device] = (deviceStats[device] || 0) + 1;
-
-    // 2. Browser Stats
-    const browser = agent.family;
-    const browserStats = link.browser_stats || {};
-    browserStats[browser] = (browserStats[browser] || 0) + 1;
-
-    // 3. Daily Clicks
-    let dailyClicks = link.daily_clicks || [];
-    const dayEntry = dailyClicks.find(d => d.date === today);
-    if (dayEntry) {
-      dayEntry.clicks += 1;
-    } else {
-      dailyClicks.push({ date: today, clicks: 1 });
+    if (error || !link || !link.is_active) {
+      return res.redirect('/404');
     }
-    // Keep only last 30 days
-    if (dailyClicks.length > 30) dailyClicks.shift();
 
-    // 4. Update Database
+    // Simplified Tracking for Debugging
     await supabase.from('links').update({
-      clicks: link.clicks + 1,
-      device_stats: deviceStats,
-      browser_stats: browserStats,
-      daily_clicks: dailyClicks
+      clicks: (link.clicks || 0) + 1
     }).eq('id', link.id);
 
     res.redirect(link.original_url);
   } catch (err) {
-    res.redirect('/');
+    console.error('Redirect Error:', err);
+    res.redirect('https://kkoneurlorig.vercel.app');
   }
 };
 
