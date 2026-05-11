@@ -37,24 +37,15 @@ const Landing = () => {
     { icon: <Star size={20} />, value: '4.9★', label: 'User Rating' },
   ];
 
-  const handleShorten = async () => {
+  const handleShorten = () => {
     if (!url.trim()) return;
     
     if (!user) {
       // Redirect to login but keep the URL in state to shorten after login
       navigate('/login', { state: { pendingUrl: url } });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { data } = await api.createLink({ originalUrl: url });
-      const baseUrl = window.location.origin.replace('https://', '').replace('http://', '');
-      setShortened(`${baseUrl}/${data.shortCode}`);
-    } catch (err) {
-      console.error('Shorten error:', err);
-    } finally {
-      setLoading(false);
+    } else {
+      // Already logged in, go to links page and open modal via state
+      navigate('/links', { state: { pendingUrl: url } });
     }
   };
 
