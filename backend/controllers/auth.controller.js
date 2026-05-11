@@ -49,11 +49,14 @@ exports.getProfile = async (req, res) => {
       const { data: newUser, error: createError } = await supabase.from('users').insert([{
         id: req.user.id,
         email: req.user.email,
-        display_name: req.user.email.split('@')[0],
+        display_name: req.user.email?.split('@')[0] || 'User',
         username: 'user_' + Math.random().toString(36).substring(2, 7)
       }]).select().single();
       
-      if (createError) throw createError;
+      if (createError) {
+        console.error('CRITICAL: Failed to auto-provision profile:', createError);
+        return res.status(500).json({ message: 'Profile setup failed', details: createError.message });
+      }
       return res.json(newUser);
     }
     
