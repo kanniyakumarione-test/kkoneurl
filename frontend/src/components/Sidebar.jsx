@@ -17,7 +17,7 @@ const navItems = [
 const Sidebar = ({ open, onClose, links = [] }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
 
   const linkCount = links.length;
   const linkLimit = 100;
