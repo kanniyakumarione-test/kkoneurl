@@ -161,7 +161,7 @@ function App() {
           </PrivateRoute>
         } />
 
-        <Route path="/@/:username" element={<PublicBio />} />
+        <Route path="/@:username" element={<PublicBio />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
