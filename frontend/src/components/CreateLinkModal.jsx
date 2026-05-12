@@ -29,7 +29,16 @@ const CreateLinkModal = ({ onClose, onAdd, initialUrl }) => {
         title: form.title,
         password: form.password,
         expiresAt: form.expiresAt,
-        tags: form.tags
+        tags: form.tags,
+        device_routing: {
+          ios: form.iosUrl,
+          android: form.androidUrl
+        },
+        ab_test: {
+          enabled: form.abEnabled,
+          url_b: form.urlB,
+          split: form.abSplit
+        }
       });
       
       setCreatedLink(newLink);
@@ -108,6 +117,39 @@ const CreateLinkModal = ({ onClose, onAdd, initialUrl }) => {
                   <label className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center gap-2"><Clock size={12} /> Expiry</label>
                   <input className="input" type="date" value={form.expiresAt} onChange={e => setForm({...form, expiresAt: e.target.value})} />
                 </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <p className="text-[10px] font-black uppercase tracking-widest text-purple-light flex items-center gap-2"><Zap size={12} /> Advanced Routing</p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-white/40 flex items-center gap-2"><Smartphone size={10} /> iOS Redirect</label>
+                    <input className="input !py-2 !text-xs" placeholder="App Store URL..." value={form.iosUrl || ''} onChange={e => setForm({...form, iosUrl: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-white/40 flex items-center gap-2"><Globe size={10} /> Android Redirect</label>
+                    <input className="input !py-2 !text-xs" placeholder="Play Store URL..." value={form.androidUrl || ''} onChange={e => setForm({...form, androidUrl: e.target.value})} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4 border-t border-white/5">
+                <div className="flex items-center justify-between">
+                   <p className="text-[10px] font-black uppercase tracking-widest text-cyan flex items-center gap-2"><Zap size={12} /> A/B Testing</p>
+                   <button className={`w-8 h-4 rounded-full transition-all ${form.abEnabled ? 'bg-cyan' : 'bg-white/10'}`} onClick={() => setForm({...form, abEnabled: !form.abEnabled})}><div className={`w-3 h-3 bg-white rounded-full transition-all ${form.abEnabled ? 'translate-x-4' : 'translate-x-0.5'}`} /></button>
+                </div>
+                {form.abEnabled && (
+                  <div className="grid sm:grid-cols-2 gap-4 animate-fade-in">
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-white/40">URL Variation B</label>
+                      <input className="input !py-2 !text-xs" placeholder="https://variation-b.com" value={form.urlB || ''} onChange={e => setForm({...form, urlB: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-bold text-white/40">Split (%)</label>
+                      <input type="number" className="input !py-2 !text-xs" placeholder="50" value={form.abSplit || 50} onChange={e => setForm({...form, abSplit: e.target.value})} />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <button 

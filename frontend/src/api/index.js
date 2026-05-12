@@ -26,6 +26,7 @@ export const updateProfile = (profileData) => API.put('/auth/profile', profileDa
 export const deleteAccount = () => API.delete('/auth/delete-account');
 export const fetchPublicProfile = (username) => API.get(`/auth/public/${username}`);
 export const changePassword = (passwordData) => API.put('/auth/change-password', passwordData);
+export const generateApiKey = () => API.post('/auth/generate-api-key');
 
 export const fetchNotifications = () => API.get('/notifications');
 export const markNotificationRead = (id) => API.patch(`/notifications/${id}/read`);

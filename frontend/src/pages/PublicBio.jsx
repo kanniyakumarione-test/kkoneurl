@@ -1,25 +1,35 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ExternalLink, Zap } from 'lucide-react';
+import { ExternalLink, Zap, Camera, Code, Share2, Play, Briefcase, Send } from 'lucide-react';
 import * as api from '../api';
 
 const THEMES = {
-  'dark-purple': { bg: 'bg-[#0e0a1f]', grad: 'from-[#0e0a1f] to-[#1a1040]', accent: 'text-purple', border: 'border-purple' },
-  'dark-cyan': { bg: 'bg-[#071828]', grad: 'from-[#071828] to-[#0a1f2e]', accent: 'text-cyan', border: 'border-cyan' },
-  'midnight': { bg: 'bg-[#07070f]', grad: 'from-[#07070f] to-[#12121a]', accent: 'text-purple-light', border: 'border-purple-light' },
+  'dark-purple': { bg: 'bg-[#0e0a1f]', grad: 'from-[#0e0a1f] to-[#1a1040]', accent: 'text-purple', border: 'border-purple', btn: 'bg-white/5 border-white/10 hover:bg-white/10' },
+  'dark-cyan': { bg: 'bg-[#071828]', grad: 'from-[#071828] to-[#0a1f2e]', accent: 'text-cyan', border: 'border-cyan', btn: 'bg-white/5 border-white/10 hover:bg-white/10' },
+  'midnight': { bg: 'bg-[#07070f]', grad: 'from-[#07070f] to-[#12121a]', accent: 'text-purple-light', border: 'border-purple-light', btn: 'bg-white/5 border-white/10 hover:bg-white/10' },
+  'glass-purple': { bg: 'bg-[#6c63ff]', grad: 'from-[#6c63ff] to-[#9b94ff]', accent: 'text-white', border: 'border-white', glass: true, btn: 'bg-white/20 border-white/30 backdrop-blur-xl hover:bg-white/30' },
+  'glass-cyan': { bg: 'bg-[#00d4ff]', grad: 'from-[#00d4ff] to-[#00e5ff]', accent: 'text-white', border: 'border-white', glass: true, btn: 'bg-white/20 border-white/30 backdrop-blur-xl hover:bg-white/30' },
+  'neo-dark': { bg: 'bg-[#121212]', grad: 'from-[#121212] to-[#1a1a1a]', accent: 'text-[#43e97b]', border: 'border-[#43e97b]', neo: true, btn: 'bg-[#121212] border-[#222] shadow-[6px_6px_12px_#080808,-6px_-6px_12px_#1c1c1c] hover:shadow-inner' },
+};
+
+const SOCIAL_ICONS = {
+  instagram: <Camera size={20} />,
+  github: <Code size={20} />,
+  twitter: <Share2 size={20} />,
+  x: <Share2 size={20} />,
+  youtube: <Play size={20} />,
+  linkedin: <Briefcase size={20} />,
 };
 
 const PublicBio = () => {
   const { username } = useParams();
   const [bio, setBio] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState('');
 
   useEffect(() => {
     const loadProfile = async () => {
-      if (!username) {
-        setLoading(false);
-        return;
-      }
+      if (!username) return setLoading(false);
 
       try {
         const cleanUsername = username.startsWith('@') ? username.substring(1) : username;
@@ -29,7 +39,10 @@ const PublicBio = () => {
           bio: data.bio,
           avatar: data.avatar,
           theme: data.theme,
-          links: data.bio_links || []
+          links: data.bio_links || [],
+          socialLinks: data.social_links || {},
+          embeds: data.embeds || [],
+          newsletter: data.newsletter_settings || { enabled: false, title: 'Join my newsletter' }
         });
       } catch (err) {
         console.error('Profile load error:', err);
@@ -41,7 +54,7 @@ const PublicBio = () => {
   }, [username]);
 
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-[#07070f] text-white/20 uppercase tracking-[0.4em] font-black">Loading Profile...</div>;
-  if (!bio) return <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#07070f] text-white">
+  if (!bio) return <div className="h-screen w-screen flex flex-col items-center justify-center bg-[#07070f] text-white p-6 text-center">
     <h1 className="text-4xl font-black mb-4 tracking-tighter">Profile Not Found</h1>
     <p className="text-white/40">This link-in-bio page doesn't exist or has been removed.</p>
   </div>;
@@ -49,26 +62,37 @@ const PublicBio = () => {
   const t = THEMES[bio.theme] || THEMES['dark-purple'];
 
   return (
-    <div className={`min-h-screen w-full flex justify-center py-20 px-6 ${t.bg} bg-gradient-to-br ${t.grad} text-white`}>
+    <div className={`min-h-screen w-full flex justify-center py-20 px-6 ${t.bg} bg-gradient-to-br ${t.grad} text-white transition-colors duration-500`}>
       <div className="w-full max-w-xl flex flex-col items-center">
-        <div className={`w-28 h-28 rounded-full border-4 ${t.border} p-1 mb-6 shadow-2xl shadow-black/50`}>
+        {/* Avatar */}
+        <div className={`w-28 h-28 rounded-full border-4 ${t.border} p-1 mb-6 shadow-2xl shadow-black/50 overflow-hidden`}>
           <div className="w-full h-full rounded-full bg-white/5 overflow-hidden flex items-center justify-center">
             {bio.avatar ? <img src={bio.avatar} className="w-full h-full object-cover" /> : <span className="text-4xl">👤</span>}
           </div>
         </div>
 
         <h1 className="text-3xl font-black font-display tracking-tight mb-2 uppercase">{bio.displayName}</h1>
-        <p className="text-white/60 text-center mb-10 max-w-md leading-relaxed">{bio.bio}</p>
+        <p className="text-white/60 text-center mb-6 max-w-md leading-relaxed">{bio.bio}</p>
 
-        <div className="w-full space-y-4 mb-20">
+        {/* Social Icons Bar */}
+        <div className="flex gap-4 mb-10">
+          {Object.entries(bio.socialLinks).map(([platform, url]) => url && (
+            <a key={platform} href={url} target="_blank" rel="noreferrer" className={`w-12 h-12 rounded-full flex items-center justify-center ${t.btn} transition-all hover:scale-110`}>
+              {SOCIAL_ICONS[platform] || platform[0].toUpperCase()}
+            </a>
+          ))}
+        </div>
+
+        {/* Links */}
+        <div className="w-full space-y-4 mb-10">
           {bio.links.map(link => (
             <a
               key={link.id}
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group block p-5 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:scale-[1.02] hover:bg-white/10 hover:border-white/20 active:scale-[0.98]"
-              style={{ borderColor: `${link.color}40` }}
+              className={`group block p-5 rounded-[2rem] border transition-all hover:scale-[1.02] active:scale-[0.98] ${t.btn}`}
+              style={{ borderColor: !t.glass && !t.neo ? `${link.color}40` : undefined }}
             >
               <div className="flex items-center gap-5">
                 <span className="text-2xl">{link.icon}</span>
@@ -79,7 +103,38 @@ const PublicBio = () => {
           ))}
         </div>
 
-        <div className="flex items-center gap-3 opacity-30 font-black text-[10px] uppercase tracking-[0.3em]">
+        {/* Embeds (YouTube / Spotify) */}
+        {bio.embeds.map((embed, i) => (
+          <div key={i} className="w-full aspect-video rounded-3xl overflow-hidden mb-10 shadow-2xl border border-white/10">
+            {embed.type === 'youtube' ? (
+              <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${embed.id}`} title="YouTube video player" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+            ) : embed.type === 'spotify' ? (
+              <iframe className="w-full h-full" src={`https://open.spotify.com/embed/track/${embed.id}`} frameBorder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+            ) : null}
+          </div>
+        ))}
+
+        {/* Newsletter Signup */}
+        {bio.newsletter?.enabled && (
+          <div className={`w-full p-8 rounded-[2.5rem] mb-20 ${t.btn}`}>
+            <h3 className="text-xl font-black mb-2">{bio.newsletter.title}</h3>
+            <p className="text-sm text-white/40 mb-6">Stay updated with my latest content.</p>
+            <div className="flex gap-2">
+              <input 
+                type="email" 
+                placeholder="email@example.com" 
+                className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-white/30 outline-none"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+              />
+              <button className={`p-3 rounded-2xl ${t.accent.replace('text-', 'bg-')} text-black hover:opacity-90 transition-all shadow-glow`}>
+                <Send size={20} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 opacity-30 font-black text-[10px] uppercase tracking-[0.3em] pb-10">
           <Zap size={14} fill="currentColor" />
           Powered by kkoneurl
         </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { INITIAL_BIO_PAGE } from './store/linksStore';
 import Sidebar from './components/Sidebar';
@@ -16,6 +16,8 @@ import Auth from './pages/Auth';
 import PasswordGate from './pages/PasswordGate';
 import RedirectHandler from './pages/RedirectHandler';
 import CreateLinkModal from './components/CreateLinkModal';
+import BatchShortenerModal from './components/BatchShortenerModal';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import * as api from './api';
 import { useToast } from './context/ToastContext';
 
@@ -46,13 +48,22 @@ const AppLayout = ({ children, onShorten, links }) => {
 
 function App() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const toast = useToast();
   const [links, setLinks] = useState([]);
   const [bioPage, setBioPage] = useState(INITIAL_BIO_PAGE);
   const [showCreate, setShowCreate] = useState(false);
+  const [showBatch, setShowBatch] = useState(false);
   const [initialUrl, setInitialUrl] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Keyboard Shortcuts
+  useKeyboardShortcuts({
+    'cmd+k': () => navigate('/links'),
+    'n': () => setShowCreate(true),
+    'b': () => setShowBatch(true)
+  });
 
   useEffect(() => {
     if (location.state?.pendingUrl && user) {
@@ -186,6 +197,13 @@ function App() {
           onClose={() => setShowCreate(false)}
           onAdd={addLink}
           initialUrl={initialUrl}
+        />
+      )}
+
+      {showBatch && (
+        <BatchShortenerModal
+          onClose={() => setShowBatch(false)}
+          onAddBatch={addLink}
         />
       )}
     </>

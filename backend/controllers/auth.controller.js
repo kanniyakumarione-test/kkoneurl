@@ -132,7 +132,7 @@ exports.deleteAccount = async (req, res) => {
 exports.getPublicProfile = async (req, res) => {
   try {
     const { username } = req.params;
-    const { data, error } = await supabase.from('users').select('display_name, bio, avatar, theme, bio_links, settings').eq('username', username).single();
+    const { data, error } = await supabase.from('users').select('display_name, bio, avatar, theme, bio_links, settings, social_links, embeds, newsletter_settings').eq('username', username).single();
     
     if (error || !data) return res.status(404).json({ message: 'Profile not found' });
     
@@ -198,6 +198,17 @@ exports.changePassword = async (req, res) => {
     res.json({ message: 'Password updated successfully' });
   } catch (err) {
     console.error('Change Password Error:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.generateApiKey = async (req, res) => {
+  try {
+    const apiKey = 'kk_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const { error } = await supabase.from('users').update({ api_key: apiKey }).eq('id', req.user.id);
+    if (error) throw error;
+    res.json({ apiKey });
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };

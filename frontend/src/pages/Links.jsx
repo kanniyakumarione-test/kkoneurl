@@ -69,6 +69,9 @@ const LinkCard = ({ link, onDelete, onToggle, onCopy }) => {
           <button onClick={() => onCopy(`https://kkoneurl.vercel.app/${link.short_code}`)} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-white hover:border-purple/40 hover:bg-purple/10 transition-all" title="Copy">
             <Copy size={18} />
           </button>
+          <button className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-cyan hover:border-cyan/40 hover:bg-cyan/10 transition-all" title="Move to Bundle">
+            <Tag size={18} />
+          </button>
           <button onClick={() => onDelete(link._id)} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-pink hover:border-pink/40 hover:bg-pink/10 transition-all" title="Delete">
             <Trash2 size={18} />
           </button>

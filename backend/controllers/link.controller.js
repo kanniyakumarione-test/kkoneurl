@@ -2,7 +2,7 @@ const supabase = require('../config/supabase');
 
 exports.shortenUrl = async (req, res) => {
   try {
-    const { originalUrl, customSlug, title, password, expiresAt, tags } = req.body;
+    const { originalUrl, customSlug, title, password, expiresAt, tags, device_routing, geo_redirects } = req.body;
     const shortCode = customSlug || Math.random().toString(36).substring(2, 8);
     const tagsArray = Array.isArray(tags) ? tags : (tags ? tags.split(',').map(t => t.trim()) : []);
 
@@ -15,7 +15,9 @@ exports.shortenUrl = async (req, res) => {
         title: title || originalUrl,
         password,
         expires_at: expiresAt || null,
-        tags: tagsArray
+        tags: tagsArray,
+        device_routing: device_routing || {},
+        geo_redirects: geo_redirects || {}
       }])
       .select()
       .single();
@@ -31,6 +33,8 @@ exports.redirectUrl = async (req, res) => {
   try {
     const { code } = req.params;
     const { password } = req.query;
+    const userAgent = req.headers['user-agent'] || '';
+    const ip = require('request-ip').getClientIp(req) || '0.0.0.0';
 
     if (!code) return res.redirect('https://kkoneurlorig.vercel.app');
 
@@ -40,17 +44,87 @@ exports.redirectUrl = async (req, res) => {
       return res.redirect('https://kkoneurlorig.vercel.app/404');
     }
 
-    // 🛡️ Password Protection Gate
+    // 1. 🛡️ Expiration Check
+    if (link.expires_at && new Date(link.expires_at) < new Date()) {
+      return res.redirect('https://kkoneurlorig.vercel.app/404?error=expired');
+    }
+
+    // 2. 🛡️ Password Protection Gate
     if (link.password && link.password !== password) {
       return res.redirect(`https://kkoneurlorig.vercel.app/p/${code}`);
     }
 
-    // Simplified Tracking for Debugging
-    await supabase.from('links').update({
-      clicks: (link.clicks || 0) + 1
-    }).eq('id', link.id);
+    // 3. 📊 Analytics Tracking (Async - don't block redirect)
+    const trackAnalytics = async () => {
+      try {
+        const ua = require('useragent').parse(userAgent);
+        const device = ua.device.family === 'Other' ? (userAgent.includes('Mobile') ? 'mobile' : 'desktop') : ua.device.family.toLowerCase();
+        const browser = ua.family.toLowerCase();
+        const today = new Date().toISOString().split('T')[0];
 
-    res.redirect(link.original_url);
+        // Update Stats
+        const device_stats = link.device_stats || { mobile: 0, desktop: 0, tablet: 0 };
+        const browser_stats = link.browser_stats || {};
+        const daily_clicks = link.daily_clicks || [];
+
+        // Increment device
+        if (device.includes('iphone') || device.includes('mobile')) device_stats.mobile = (device_stats.mobile || 0) + 1;
+        else if (device.includes('ipad') || device.includes('tablet')) device_stats.tablet = (device_stats.tablet || 0) + 1;
+        else device_stats.desktop = (device_stats.desktop || 0) + 1;
+
+        // Increment browser
+        browser_stats[browser] = (browser_stats[browser] || 0) + 1;
+
+        // Daily clicks
+        const dayIdx = daily_clicks.findIndex(d => d.date === today);
+        if (dayIdx > -1) daily_clicks[dayIdx].clicks += 1;
+        else daily_clicks.push({ date: today, clicks: 1 });
+
+        // Milestone Notification Check
+        const totalClicks = (link.clicks || 0) + 1;
+        const milestones = [10, 50, 100, 500, 1000, 5000];
+        if (milestones.includes(totalClicks)) {
+          await supabase.from('notifications').insert([{
+            user_id: link.user_id,
+            type: 'milestone',
+            title: 'Link Milestone Reached! 🎉',
+            message: `Your link "${link.title || code}" has reached ${totalClicks} clicks!`
+          }]);
+        }
+
+        await supabase.from('links').update({
+          clicks: totalClicks,
+          device_stats,
+          browser_stats,
+          daily_clicks: daily_clicks.slice(-30) // Keep last 30 days
+        }).eq('id', link.id);
+      } catch (err) {
+        console.error('Analytics Error:', err);
+      }
+    };
+    trackAnalytics();
+
+    // 4. 🌍 Geo-Redirects & 📱 Device Routing & 🧪 A/B Testing
+    let finalUrl = link.original_url;
+
+    // A/B Testing
+    if (link.ab_test && link.ab_test.enabled && link.ab_test.url_b) {
+      const split = link.ab_test.split || 50;
+      if (Math.random() * 100 > split) {
+        finalUrl = link.ab_test.url_b;
+      }
+    }
+
+    // Device Routing (Simple check)
+    const deviceType = userAgent.includes('Mobi') ? 'mobile' : 'desktop';
+    if (link.device_routing && link.device_routing[deviceType]) {
+      finalUrl = link.device_routing[deviceType];
+    }
+
+    // Geo-Redirects (Placeholder for now, requires a Geo-IP lookup)
+    // if (link.geo_redirects && link.geo_redirects[countryCode]) { ... }
+
+    res.redirect(finalUrl);
   } catch (err) {
     console.error('Redirect Error:', err);
     res.redirect('https://kkoneurlorig.vercel.app');

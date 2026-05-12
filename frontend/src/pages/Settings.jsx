@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, Eye } from 'lucide-react';
+import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, Eye, EyeOff, Zap } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import * as api from '../api';
@@ -35,6 +35,7 @@ const Settings = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPasswordFields, setShowPasswordFields] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ old: '', new: '' });
   const [passwordLock, setPasswordLock] = useState(null);
   const [form, setForm] = useState({
@@ -52,7 +53,8 @@ const Settings = () => {
           name: data.display_name || '',
           email: data.email || '',
           public: data.settings?.publicProfile ?? true,
-          notifs: data.settings?.emailNotifs ?? true
+          notifs: data.settings?.emailNotifs ?? true,
+          apiKey: data.api_key || ''
         });
 
         // 🛡️ Check Password Lock
@@ -158,6 +160,39 @@ const Settings = () => {
             <input type="checkbox" checked={form.public} className="sr-only peer" onChange={() => setForm({...form, public: !form.public})} />
             <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/40 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple peer-checked:after:bg-white" />
           </label>
+        </SettingsRow>
+      </SettingsSection>
+
+      <SettingsSection title="Developer API" icon={<Zap size={14} />}>
+        <SettingsRow label="API Key" desc="Use this key to shorten links programmatically">
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <input 
+                type={showApiKey ? "text" : "password"} 
+                className="input sm:w-64 font-mono text-[10px] pr-10" 
+                value={form.apiKey || ''} 
+                readOnly 
+                placeholder="••••••••••••••••"
+              />
+              <button 
+                onClick={() => setShowApiKey(!showApiKey)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
+              >
+                {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+            <button 
+              className="p-2.5 rounded-xl bg-purple/10 border border-purple/20 text-purple-light hover:bg-purple/20 transition-all"
+              onClick={async () => {
+                const { data } = await api.generateApiKey();
+                setForm({...form, apiKey: data.apiKey});
+                toast('New API Key generated! 🔑', 'success');
+              }}
+              title="Generate New Key"
+            >
+              <Zap size={16} />
+            </button>
+          </div>
         </SettingsRow>
       </SettingsSection>
 

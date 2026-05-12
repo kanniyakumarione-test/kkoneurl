@@ -8,6 +8,7 @@ router.post('/login', login);
 router.get('/profile', protect, getProfile);
 router.put('/profile', protect, updateProfile);
 router.put('/change-password', protect, changePassword);
+router.post('/generate-api-key', protect, require('../controllers/auth.controller').generateApiKey);
 router.delete('/delete-account', protect, deleteAccount);
 router.get('/public/:username', getPublicProfile);
 

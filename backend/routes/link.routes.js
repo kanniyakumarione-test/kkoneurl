@@ -17,4 +17,8 @@ router.get('/:id/analytics', controller.getLinkAnalytics);
 router.delete('/:id', controller.deleteLink);
 router.patch('/:id/toggle', controller.toggleStatus);
 
+// 🚀 Developer API (Using API Key)
+const apiKeyAuth = require('../middleware/apiKeyAuth');
+router.post('/api/v1/shorten', apiKeyAuth, controller.shortenUrl);
+
 module.exports = router;
