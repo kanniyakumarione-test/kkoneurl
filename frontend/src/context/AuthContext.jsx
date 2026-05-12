@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { auth, googleProvider } from '../lib/firebase';
-import { signInWithRedirect, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithRedirect, signOut, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 import * as api from '../api';
 
 const AuthContext = createContext();
@@ -27,7 +27,18 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Listen for changes on auth state (logged in, signed out, etc.)
+    // Check for redirect result (catch errors from the sign-in flow)
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result) {
+          console.log('Redirect Sign-In Successful:', result.user.email);
+        }
+      })
+      .catch((error) => {
+        console.error('Redirect Sign-In Error:', error.code, error.message);
+      });
+
+    // Listen for changes on auth state
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         setUser(firebaseUser);
@@ -47,10 +58,9 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     try {
-      // Switched to redirect to avoid popup/iframe security issues
       await signInWithRedirect(auth, googleProvider);
     } catch (error) {
-      console.error('Google Sign-In Error:', error);
+      console.error('Google Sign-In Initiation Error:', error);
       throw error;
     }
   };
