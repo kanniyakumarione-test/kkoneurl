@@ -116,21 +116,39 @@ const PublicBio = () => {
 
         {/* Newsletter Signup */}
         {bio.newsletter?.enabled && (
-          <div className={`w-full p-8 rounded-[2.5rem] mb-20 ${t.btn}`}>
-            <h3 className="text-xl font-black mb-2">{bio.newsletter.title}</h3>
-            <p className="text-sm text-white/40 mb-6">Stay updated with my latest content.</p>
-            <div className="flex gap-2">
-              <input 
-                type="email" 
-                placeholder="email@example.com" 
-                className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-white/30 outline-none"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-              />
-              <button className={`p-3 rounded-2xl ${t.accent.replace('text-', 'bg-')} text-black hover:opacity-90 transition-all shadow-glow`}>
-                <Send size={20} />
-              </button>
-            </div>
+          <div className={`w-full p-8 rounded-[2.5rem] mb-20 ${t.btn} transition-all duration-500`}>
+            {success ? (
+              <div className="text-center py-4 animate-scale-in">
+                <div className="w-12 h-12 bg-green/20 text-green rounded-full flex items-center justify-center mx-auto mb-4">
+                   <Zap size={24} fill="currentColor" />
+                </div>
+                <h3 className="text-xl font-black mb-1">You're on the list!</h3>
+                <p className="text-sm text-white/40">Check your inbox soon. 🚀</p>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-xl font-black mb-2">{bio.newsletter.title}</h3>
+                <p className="text-sm text-white/40 mb-6">Stay updated with my latest content.</p>
+                <form onSubmit={handleSignup} className="flex gap-2">
+                  <input 
+                    type="email" 
+                    placeholder="email@example.com" 
+                    required
+                    className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-white/30 outline-none"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    disabled={loading}
+                  />
+                  <button 
+                    disabled={loading}
+                    className={`p-3 rounded-2xl ${t.accent.replace('text-', 'bg-')} text-black hover:opacity-90 transition-all shadow-glow flex items-center justify-center min-w-[50px]`}
+                  >
+                    {loading ? <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" /> : <Send size={20} />}
+                  </button>
+                </form>
+                {error && <p className="text-[10px] text-pink mt-3 font-bold uppercase tracking-widest text-center animate-shake">Something went wrong. Try again?</p>}
+              </>
+            )}
           </div>
         )}
 
