@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import * as api from '../api';
 
 const RedirectHandler = () => {
   const { code } = useParams();
@@ -9,11 +8,22 @@ const RedirectHandler = () => {
   useEffect(() => {
     const handleRedirect = async () => {
       try {
+        if (!code) {
+          setError(true);
+          return;
+        }
+
+        // Guard against @username paths accidentally flowing into short-link redirects.
+        if (code.startsWith('@')) {
+          window.location.replace(`/@/${code.substring(1)}`);
+          return;
+        }
+
         // We just redirect to the backend endpoint which handles the logic
         // This ensures tracking and password gates work correctly
         const apiUrl = import.meta.env.VITE_API_URL || 'https://kkoneurlorig.vercel.app/api';
         const backendRoot = apiUrl.replace(/\/api$/, '');
-        window.location.href = `${backendRoot}/${code}${window.location.search}`;
+        window.location.replace(`${backendRoot}/${code}${window.location.search}`);
       } catch (err) {
         setError(true);
       }

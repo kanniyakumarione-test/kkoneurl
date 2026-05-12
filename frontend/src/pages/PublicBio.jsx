@@ -16,14 +16,13 @@ const PublicBio = () => {
 
   useEffect(() => {
     const loadProfile = async () => {
-      // Only handle usernames starting with @
-      if (!username?.startsWith('@')) {
+      if (!username) {
         setLoading(false);
         return;
       }
 
       try {
-        const cleanUsername = username.substring(1); // Remove @
+        const cleanUsername = username.startsWith('@') ? username.substring(1) : username;
         const { data } = await api.fetchPublicProfile(cleanUsername);
         setBio({
           displayName: data.display_name,

@@ -175,6 +175,7 @@ function App() {
         } />
 
         <Route path="/p/:code" element={<PasswordGate />} />
+        <Route path="/@/:username" element={<PublicBio />} />
         <Route path="/@:username" element={<PublicBio />} />
         <Route path="/:code" element={<RedirectHandler />} />
         <Route path="*" element={<Navigate to="/" replace />} />
