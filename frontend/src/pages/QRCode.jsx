@@ -25,7 +25,7 @@ const QRCode = ({ links }) => {
   const [customUrl, setCustomUrl] = useState('');
 
   const link = links.find(l => l._id === selected) || links[0];
-  const domain = 'kkoneurl.vercel.app';
+  const domain = 'kkoneurl.kanniyakumarione.com';
   const qrText = useCustom ? (customUrl || `https://${domain}`) : `https://${domain}/${link?.short_code || ''}`;
   const qrSrc = getQRUrl(qrText, size, style.fg, style.bg);
 

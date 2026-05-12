@@ -56,7 +56,7 @@ const ApiDocs = () => {
                   <span className={`px-3 py-1 rounded-lg text-[10px] font-black tracking-widest ${ep.method === 'POST' ? 'bg-purple/20 text-purple-light' : 'bg-green/20 text-green'}`}>{ep.method}</span>
                   <code className="text-sm font-bold text-white/60">{ep.path}</code>
                 </div>
-                <button onClick={() => handleCopy(`https://kkoneurl.vercel.app${ep.path}`)} className="p-2 text-white/10 hover:text-white transition-colors"><Copy size={16} /></button>
+                <button onClick={() => handleCopy(`https://kkoneurl.kanniyakumarione.com${ep.path}`)} className="p-2 text-white/10 hover:text-white transition-colors"><Copy size={16} /></button>
               </div>
               <div className="card !p-8 bg-white/[0.02] border-white/5 group-hover:border-white/10 transition-all">
                 <p className="text-white/40 text-sm mb-6">{ep.desc}</p>

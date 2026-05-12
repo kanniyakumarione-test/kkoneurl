@@ -230,14 +230,14 @@ const Settings = () => {
 
             <div className="relative group">
               <pre className="bg-bg-primary p-5 rounded-2xl text-[11px] font-mono text-white/80 overflow-x-auto border border-white/5 shadow-inner leading-relaxed">
-                {`curl -X POST https://kkoneurl.vercel.app/api/v1/shorten \\
+                {`curl -X POST https://kkoneurl.kanniyakumarione.com/api/v1/shorten \\
   -H "x-api-key: ${form.apiKey}" \\
   -H "Content-Type: application/json" \\
   -d '{"url": "https://example.com"}'`}
               </pre>
               <button 
                 onClick={() => {
-                  navigator.clipboard.writeText(`curl -X POST https://kkoneurl.vercel.app/api/v1/shorten -H "x-api-key: ${form.apiKey}" -H "Content-Type: application/json" -d '{"url": "https://example.com"}'`);
+                  navigator.clipboard.writeText(`curl -X POST https://kkoneurl.kanniyakumarione.com/api/v1/shorten -H "x-api-key: ${form.apiKey}" -H "Content-Type: application/json" -d '{"url": "https://example.com"}'`);
                   toast('Usage snippet copied! 🚀', 'success');
                 }}
                 className="absolute top-4 right-4 p-2 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-white/10 text-white/40 hover:text-white"

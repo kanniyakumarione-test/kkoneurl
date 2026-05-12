@@ -83,7 +83,7 @@ const CreateLinkModal = ({ onClose, onAdd, initialUrl }) => {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Custom Slug</label>
                   <div className="flex">
-                    <span className="px-4 py-3 bg-white/5 border border-white/10 border-r-0 rounded-l-xl text-[10px] font-bold text-white/20">kkoneurl.vercel.app/</span>
+                    <span className="px-4 py-3 bg-white/5 border border-white/10 border-r-0 rounded-l-xl text-[10px] font-bold text-white/20">kkoneurl.kanniyakumarione.com/</span>
                     <input className="input !rounded-l-none" placeholder="slug" value={form.customSlug} onChange={e => setForm({...form, customSlug: e.target.value})} />
                   </div>
                 </div>
@@ -166,11 +166,11 @@ const CreateLinkModal = ({ onClose, onAdd, initialUrl }) => {
                 <Check size={40} className="text-green" />
               </div>
               <div className="card !bg-bg-secondary border-purple/30">
-                <p className="text-purple-light font-black text-2xl">kkoneurl.vercel.app/{createdLink?.short_code}</p>
+                <p className="text-purple-light font-black text-2xl">kkoneurl.kanniyakumarione.com/{createdLink?.short_code}</p>
                 <p className="text-xs text-white/20 mt-2 truncate max-w-xs mx-auto">Redirects to {createdLink?.original_url}</p>
               </div>
               <div className="flex gap-4">
-                <button className="btn btn-secondary flex-1 !py-4" onClick={() => {navigator.clipboard.writeText(`https://kkoneurl.vercel.app/${createdLink?.short_code}`); toast('Copied!', 'success')}}>Copy Link</button>
+                <button className="btn btn-secondary flex-1 !py-4" onClick={() => {navigator.clipboard.writeText(`https://kkoneurl.kanniyakumarione.com/${createdLink?.short_code}`); toast('Copied!', 'success')}}>Copy Link</button>
                 <button className="btn btn-primary flex-1 !py-4" onClick={onClose}>Done</button>
               </div>
             </div>

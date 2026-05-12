@@ -50,22 +50,22 @@ exports.redirectUrl = async (req, res) => {
     const userAgent = req.headers['user-agent'] || '';
     const ip = require('request-ip').getClientIp(req) || '0.0.0.0';
 
-    if (!code) return res.redirect('https://kkoneurlorig.vercel.app');
+    if (!code) return res.redirect('https://kkoneurl.kanniyakumarione.com');
 
     const { data: link, error } = await supabase.from('links').select('*').eq('short_code', code).single();
 
     if (error || !link || !link.is_active) {
-      return res.redirect('https://kkoneurlorig.vercel.app/404');
+      return res.redirect('https://kkoneurl.kanniyakumarione.com/404');
     }
 
     // 1. 🛡️ Expiration Check
     if (link.expires_at && new Date(link.expires_at) < new Date()) {
-      return res.redirect('https://kkoneurlorig.vercel.app/404?error=expired');
+      return res.redirect('https://kkoneurl.kanniyakumarione.com/404?error=expired');
     }
 
     // 2. 🛡️ Password Protection Gate
     if (link.password && link.password !== password) {
-      return res.redirect(`https://kkoneurlorig.vercel.app/p/${code}`);
+      return res.redirect(`https://kkoneurl.kanniyakumarione.com/p/${code}`);
     }
 
     // 3. 📊 Analytics Tracking (Async - don't block redirect)
@@ -172,7 +172,7 @@ exports.redirectUrl = async (req, res) => {
     res.redirect(finalUrl);
   } catch (err) {
     console.error('Redirect Error:', err);
-    res.redirect('https://kkoneurlorig.vercel.app');
+    res.redirect('https://kkoneurl.kanniyakumarione.com');
   }
 };
 

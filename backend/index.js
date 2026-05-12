@@ -46,7 +46,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 const { redirectUrl } = require('./controllers/link.controller');
 
 app.get('/', (req, res) => {
-  res.redirect('https://kkoneurlorig.vercel.app');
+  res.redirect('https://kkoneurl.kanniyakumarione.com');
 });
 
 app.get('/:code', async (req, res, next) => {
@@ -57,7 +57,7 @@ app.get('/:code', async (req, res, next) => {
 
   const systemRoutes = ['dashboard', 'links', 'analytics', 'qr', 'bio', 'settings', 'login'];
   if (systemRoutes.includes(code) || code.startsWith('@')) {
-    return res.redirect(`https://kkoneurlorig.vercel.app/${code}`);
+    return res.redirect(`https://kkoneurl.kanniyakumarione.com/${code}`);
   }
 
   await redirectUrl(req, res, next);

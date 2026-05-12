@@ -21,7 +21,7 @@ const RedirectHandler = () => {
 
         // We just redirect to the backend endpoint which handles the logic
         // This ensures tracking and password gates work correctly
-        const apiUrl = import.meta.env.VITE_API_URL || 'https://kkoneurlorig.vercel.app/api';
+        const apiUrl = import.meta.env.VITE_API_URL || 'https://kkoneurl.kanniyakumarione.com/api';
         const backendRoot = apiUrl.replace(/\/api$/, '');
         window.location.replace(`${backendRoot}/${code}${window.location.search}`);
       } catch (err) {

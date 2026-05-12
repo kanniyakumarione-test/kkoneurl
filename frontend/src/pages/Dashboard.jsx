@@ -125,7 +125,7 @@ const Dashboard = ({ links }) => {
                 </div>
                 <div className="flex-1 min-width-0">
                   <p className="text-sm font-bold truncate">{link.title || link.short_code}</p>
-                  <p className="text-[11px] text-purple-light/70 truncate">kkoneurl.vercel.app/{link.short_code}</p>
+                  <p className="text-[11px] text-purple-light/70 truncate">kkoneurl.kanniyakumarione.com/{link.short_code}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-black">{(link.clicks || 0).toLocaleString()}</p>

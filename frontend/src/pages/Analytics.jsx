@@ -68,7 +68,7 @@ const Analytics = ({ links }) => {
         </div>
         <div className="flex-1 text-center md:text-left">
           <h2 className="text-xl font-bold mb-1">{link.title || link.short_code}</h2>
-          <p className="text-purple-light font-bold">kkoneurl.vercel.app/{link.short_code}</p>
+          <p className="text-purple-light font-bold">kkoneurl.kanniyakumarione.com/{link.short_code}</p>
         </div>
         <div className="flex items-center gap-8 px-6 py-4 bg-white/5 rounded-2xl border border-white/5">
           {[

@@ -76,10 +76,10 @@ const BatchShortenerModal = ({ onClose, onAddBatch }) => {
                   <div key={i} className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-2xl">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-white/20 truncate">{link.original_url}</p>
-                      <p className="text-purple-light font-bold">kkoneurl.vercel.app/{link.short_code}</p>
+                      <p className="text-purple-light font-bold">kkoneurl.kanniyakumarione.com/{link.short_code}</p>
                     </div>
                     <button 
-                      onClick={() => {navigator.clipboard.writeText(`https://kkoneurl.vercel.app/${link.short_code}`); toast('Copied!', 'success')}}
+                      onClick={() => {navigator.clipboard.writeText(`https://kkoneurl.kanniyakumarione.com/${link.short_code}`); toast('Copied!', 'success')}}
                       className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-white/40 hover:text-white transition-colors"
                     >
                       <Link2 size={16} />
