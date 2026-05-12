@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { BarChart3, Globe, Smartphone, Monitor, Tablet, TrendingUp } from 'lucide-react';
 import {
   AreaChart, Area, BarChart, Bar, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+  XAxis, YAxis, CartesianGrid, Tooltip
 } from 'recharts';
 
 const COLORS = ['#6c63ff', '#00d4ff', '#43e97b', '#ff6584', '#ff9a3c'];
@@ -14,6 +14,7 @@ const Analytics = ({ links }) => {
   const [selected, setSelected] = useState('');
   const trendChartRef = useRef(null);
   const [trendChartReady, setTrendChartReady] = useState(false);
+  const [trendChartWidth, setTrendChartWidth] = useState(0);
 
   useEffect(() => {
     const id = searchParams.get('id');
@@ -31,6 +32,7 @@ const Analytics = ({ links }) => {
     const updateReady = () => {
       const { width, height } = el.getBoundingClientRect();
       setTrendChartReady(width > 0 && height > 0);
+      setTrendChartWidth(Math.max(0, Math.floor(width)));
     };
 
     updateReady();
@@ -111,9 +113,8 @@ const Analytics = ({ links }) => {
             <span className="badge bg-green/10 text-green"><TrendingUp size={12} /> +14.2%</span>
           </div>
           <div ref={trendChartRef} style={{ height: 220, width: '100%', minHeight: 220, minWidth: 0 }}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              {trendChartReady ? (
-                <AreaChart data={dailyClicks}>
+              {trendChartReady && trendChartWidth > 0 ? (
+                <AreaChart width={trendChartWidth} height={220} data={dailyClicks}>
                   <defs>
                     <linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#6c63ff" stopOpacity={0.3} />
@@ -127,7 +128,6 @@ const Analytics = ({ links }) => {
                   <Area type="monotone" dataKey="clicks" stroke="#6c63ff" strokeWidth={3} fill="url(#aG)" />
                 </AreaChart>
               ) : null}
-            </ResponsiveContainer>
           </div>
         </div>
 

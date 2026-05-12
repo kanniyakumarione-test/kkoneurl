@@ -2,22 +2,38 @@ import axios from 'axios';
 
 const resolveApiBaseUrl = () => {
   const raw = import.meta.env.VITE_API_URL;
+  const fallbackProd = 'https://kkoneurl.kanniyakumarione.com/api';
+  const isLocalHost = typeof window !== 'undefined' && /localhost|127\.0\.0\.1/i.test(window.location.hostname);
 
-  if (raw && /^https?:\/\//i.test(raw)) return raw;
+  if (raw && /^https?:\/\//i.test(raw)) {
+    try {
+      const parsed = new URL(raw);
+      const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+
+      // Guard against accidental frontend-host API values in production (e.g. vercel domain).
+      if (!isLocalHost && currentHost && parsed.hostname === currentHost) {
+        return fallbackProd;
+      }
+
+      return raw;
+    } catch (_) {
+      return fallbackProd;
+    }
+  }
 
   // Handle relative values like "/api" that can break on some production hosts.
   if (raw && raw.startsWith('/')) {
-    if (typeof window !== 'undefined' && /localhost|127\.0\.0\.1/i.test(window.location.hostname)) {
+    if (isLocalHost) {
       return `http://localhost:5000${raw}`;
     }
     return `https://kkoneurl.kanniyakumarione.com${raw}`;
   }
 
-  if (typeof window !== 'undefined' && /localhost|127\.0\.0\.1/i.test(window.location.hostname)) {
+  if (isLocalHost) {
     return 'http://localhost:5000/api';
   }
 
-  return 'https://kkoneurl.kanniyakumarione.com/api';
+  return fallbackProd;
 };
 
 const API = axios.create({

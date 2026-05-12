@@ -3,10 +3,7 @@ import {
   TrendingUp, Link2, MousePointerClick, Users,
   ArrowUpRight, Clock, Copy, ExternalLink, BarChart3
 } from 'lucide-react';
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer
-} from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { useToast } from '../context/ToastContext';
 
 const StatCard = ({ icon, label, value, change, color, borderColor }) => (
@@ -33,6 +30,7 @@ const Dashboard = ({ links }) => {
   const [period, setPeriod] = useState('7d');
   const chartContainerRef = useRef(null);
   const [chartReady, setChartReady] = useState(false);
+  const [chartWidth, setChartWidth] = useState(0);
 
   useEffect(() => {
     const el = chartContainerRef.current;
@@ -41,6 +39,7 @@ const Dashboard = ({ links }) => {
     const updateReady = () => {
       const { width, height } = el.getBoundingClientRect();
       setChartReady(width > 0 && height > 0);
+      setChartWidth(Math.max(0, Math.floor(width)));
     };
 
     updateReady();
@@ -111,9 +110,8 @@ const Dashboard = ({ links }) => {
             </div>
           </div>
           <div ref={chartContainerRef} style={{ height: 240, width: '100%', minHeight: 240, minWidth: 0 }}>
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              {chartReady ? (
-                <AreaChart data={chartData}>
+            {chartReady && chartWidth > 0 ? (
+              <AreaChart width={chartWidth} height={240} data={chartData}>
                   <defs>
                     <linearGradient id="pgrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#6c63ff" stopOpacity={0.3}/>
@@ -129,8 +127,7 @@ const Dashboard = ({ links }) => {
                   />
                   <Area type="monotone" dataKey="clicks" stroke="#6c63ff" strokeWidth={3} fillOpacity={1} fill="url(#pgrad)" />
                 </AreaChart>
-              ) : null}
-            </ResponsiveContainer>
+            ) : null}
           </div>
         </div>
 
