@@ -30,3 +30,12 @@ ADD COLUMN IF NOT EXISTS bundle_id UUID REFERENCES bundles(id) ON DELETE SET NUL
 
 ALTER TABLE links
 ADD COLUMN IF NOT EXISTS og_tags JSONB DEFAULT '{"title": "", "description": "", "image": ""}'::jsonb;
+
+-- Newsletter Subscribers
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  UNIQUE(owner_id, email)
+);

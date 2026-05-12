@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, Eye, EyeOff, Zap } from 'lucide-react';
+import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, Eye, EyeOff, Zap, Copy, BarChart3 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import * as api from '../api';
@@ -169,24 +169,43 @@ const Settings = () => {
             <div className="relative">
               <input 
                 type={showApiKey ? "text" : "password"} 
-                className="input sm:w-64 font-mono text-[10px] pr-10" 
+                className="input sm:w-64 font-mono text-[10px] pr-20" 
                 value={form.apiKey || ''} 
                 readOnly 
-                placeholder="••••••••••••••••"
+                placeholder="Click ⚡ to generate"
               />
-              <button 
-                onClick={() => setShowApiKey(!showApiKey)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-colors"
-              >
-                {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
-              </button>
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {form.apiKey && (
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(form.apiKey);
+                      toast('API Key copied!', 'success');
+                    }}
+                    className="p-1.5 text-white/20 hover:text-white transition-colors"
+                    title="Copy Key"
+                  >
+                    <Copy size={12} />
+                  </button>
+                )}
+                <button 
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  className="p-1.5 text-white/20 hover:text-white transition-colors"
+                >
+                  {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                </button>
+              </div>
             </div>
             <button 
               className="p-2.5 rounded-xl bg-purple/10 border border-purple/20 text-purple-light hover:bg-purple/20 transition-all"
               onClick={async () => {
-                const { data } = await api.generateApiKey();
-                setForm({...form, apiKey: data.apiKey});
-                toast('New API Key generated! 🔑', 'success');
+                try {
+                  const { data } = await api.generateApiKey();
+                  setForm(prev => ({...prev, apiKey: data.apiKey}));
+                  toast('New API Key generated! 🔑', 'success');
+                  setShowApiKey(true);
+                } catch (err) {
+                  toast('Failed to generate key', 'error');
+                }
               }}
               title="Generate New Key"
             >
@@ -194,6 +213,41 @@ const Settings = () => {
             </button>
           </div>
         </SettingsRow>
+        
+        {form.apiKey && (
+          <div className="mt-6 p-6 bg-black/20 border border-white/5 rounded-[2rem] space-y-4 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BarChart3 size={16} className="text-purple-light" />
+                <p className="text-xs font-black uppercase tracking-[0.2em]">Quick Start Guide</p>
+              </div>
+              <span className="badge bg-purple/10 text-purple text-[9px]">API v1.0</span>
+            </div>
+            
+            <p className="text-xs text-white/40 leading-relaxed">
+              Use your API key to shorten links programmatically. Send a POST request to the endpoint below with your key in the <code className="text-purple-light font-mono">x-api-key</code> header.
+            </p>
+
+            <div className="relative group">
+              <pre className="bg-bg-primary p-5 rounded-2xl text-[11px] font-mono text-white/80 overflow-x-auto border border-white/5 shadow-inner leading-relaxed">
+                {`curl -X POST https://kkoneurl.vercel.app/api/v1/shorten \\
+  -H "x-api-key: ${form.apiKey}" \\
+  -H "Content-Type: application/json" \\
+  -d '{"url": "https://example.com"}'`}
+              </pre>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(`curl -X POST https://kkoneurl.vercel.app/api/v1/shorten -H "x-api-key: ${form.apiKey}" -H "Content-Type: application/json" -d '{"url": "https://example.com"}'`);
+                  toast('Usage snippet copied! 🚀', 'success');
+                }}
+                className="absolute top-4 right-4 p-2 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-white/10 text-white/40 hover:text-white"
+                title="Copy Snippet"
+              >
+                <Copy size={14} />
+              </button>
+            </div>
+          </div>
+        )}
       </SettingsSection>
 
       <SettingsSection title="Security" icon={<Shield size={14} />}>

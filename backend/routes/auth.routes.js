@@ -11,5 +11,6 @@ router.put('/change-password', protect, changePassword);
 router.post('/generate-api-key', protect, require('../controllers/auth.controller').generateApiKey);
 router.delete('/delete-account', protect, deleteAccount);
 router.get('/public/:username', getPublicProfile);
+router.post('/newsletter/:username/signup', require('../controllers/auth.controller').signupNewsletter);
 
 module.exports = router;

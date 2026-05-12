@@ -55,6 +55,8 @@ const BioPage = ({ bioPage, setBioPage }) => {
   const [saving, setSaving] = useState(false);
   
   const [originalUsername, setOriginalUsername] = useState('');
+  const [showAddEmbed, setShowAddEmbed] = useState(false);
+  const [newEmbed, setNewEmbed] = useState({ type: 'youtube', url: '' });
   const [canChangeUsername, setCanChangeUsername] = useState(true);
   const [daysRemaining, setDaysRemaining] = useState(0);
 
@@ -194,13 +196,39 @@ const BioPage = ({ bioPage, setBioPage }) => {
                       <button className="p-2 text-white/20 hover:text-pink transition-colors" onClick={() => setBioPage(prev => ({ ...prev, embeds: prev.embeds.filter((_, idx) => idx !== i) }))}><Trash2 size={16} /></button>
                     </div>
                   ))}
-                  <button className="btn btn-secondary w-full !py-4" onClick={() => {
-                    const type = prompt('Enter type (youtube/spotify):');
-                    const url = prompt('Enter URL:');
-                    if (!type || !url) return;
-                    let id = type === 'youtube' ? url.split('v=')[1]?.split('&')[0] || url.split('/').pop() : url.split('/track/')[1]?.split('?')[0];
-                    if (id) setBioPage(prev => ({ ...prev, embeds: [...(prev.embeds || []), { type, id }] }));
-                  }}><Plus size={14} /> Add Embed</button>
+                  {showAddEmbed ? (
+                    <div className="p-6 bg-purple/10 border border-purple/20 rounded-3xl space-y-4 animate-fade-in">
+                      <div className="flex gap-2 p-1 bg-black/20 rounded-xl">
+                        {['youtube', 'spotify'].map(t => (
+                          <button key={t} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${newEmbed.type === t ? 'bg-purple text-white shadow-lg' : 'text-white/40 hover:text-white'}`} onClick={() => setNewEmbed({...newEmbed, type: t})}>{t}</button>
+                        ))}
+                      </div>
+                      <input 
+                        className="input !bg-black/20" 
+                        placeholder={newEmbed.type === 'youtube' ? "Paste YouTube Video URL..." : "Paste Spotify Track URL..."}
+                        value={newEmbed.url}
+                        onChange={e => setNewEmbed({...newEmbed, url: e.target.value})}
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <button className="btn btn-secondary flex-1 !py-3" onClick={() => { setShowAddEmbed(false); setNewEmbed({ type: 'youtube', url: '' }); }}>Cancel</button>
+                        <button className="btn btn-primary flex-1 !py-3" onClick={() => {
+                          const { type, url } = newEmbed;
+                          if (!url) return;
+                          let id = type === 'youtube' ? url.split('v=')[1]?.split('&')[0] || url.split('/').pop() : url.split('/track/')[1]?.split('?')[0];
+                          if (id) {
+                            setBioPage(prev => ({ ...prev, embeds: [...(prev.embeds || []), { type, id }] }));
+                            setShowAddEmbed(false);
+                            setNewEmbed({ type: 'youtube', url: '' });
+                          }
+                        }}>Add</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button className="btn btn-secondary w-full !py-4 rounded-2xl border-dashed border-white/10 hover:border-purple/40" onClick={() => setShowAddEmbed(true)}>
+                      <Plus size={14} /> Add Embed
+                    </button>
+                  )}
                 </div>
               )}
 

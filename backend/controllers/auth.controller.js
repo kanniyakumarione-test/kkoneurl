@@ -212,3 +212,31 @@ exports.generateApiKey = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.signupNewsletter = async (req, res) => {
+  try {
+    const { username } = req.params;
+    const { email } = req.body;
+
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    // 1. Find the owner by username
+    const { data: user, error: userError } = await supabase.from('users').select('id').eq('username', username).single();
+    if (userError || !user) return res.status(404).json({ message: 'User not found' });
+
+    // 2. Insert subscriber
+    const { error: subError } = await supabase.from('newsletter_subscribers').insert([{
+      owner_id: user.id,
+      email: email
+    }]);
+
+    if (subError) {
+      if (subError.code === '23505') return res.status(400).json({ message: 'Already subscribed' });
+      throw subError;
+    }
+
+    res.json({ message: 'Subscribed successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
