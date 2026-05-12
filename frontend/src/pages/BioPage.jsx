@@ -98,7 +98,7 @@ const BioPage = ({ bioPage, setBioPage }) => {
         setBioPage(profile);
         setOriginalUsername(profile.username);
         
-        if (data.username_last_changed) {
+        if (data.username_customized && data.username_last_changed) {
           const lastChanged = new Date(data.username_last_changed);
           const sixtyDaysInMs = 60 * 24 * 60 * 60 * 1000;
           const diff = new Date() - lastChanged;

@@ -49,7 +49,8 @@ exports.getProfile = async (req, res) => {
         id: req.user.id,
         email: req.user.email,
         display_name: req.user.email?.split('@')[0] || 'User',
-        username: 'user_' + Math.random().toString(36).substring(2, 7)
+        username: 'user_' + Math.random().toString(36).substring(2, 7),
+        username_customized: false
       }]).select().single();
       
       if (createError) throw createError;
@@ -69,7 +70,11 @@ exports.updateProfile = async (req, res) => {
     const { displayName, bio, avatar, theme, bio_links, username, settings } = req.body;
     
     // 🛡️ Username Change Policy (60 Days)
-    const { data: current, error: fetchError } = await supabase.from('users').select('username, username_last_changed').eq('id', req.user.id).single();
+    const { data: current, error: fetchError } = await supabase
+      .from('users')
+      .select('username, username_last_changed, username_customized')
+      .eq('id', req.user.id)
+      .single();
     if (fetchError) throw fetchError;
 
     let updateData = {
@@ -86,8 +91,11 @@ exports.updateProfile = async (req, res) => {
       const lastChanged = new Date(current.username_last_changed);
       const sixtyDaysInMs = 60 * 24 * 60 * 60 * 1000;
       const now = new Date();
+      const hasCustomUsername = current.username_customized === true;
 
-      if (now - lastChanged < sixtyDaysInMs) {
+      // Allow one free first change from auto-generated username.
+      // Once customized, enforce one change per 60 days.
+      if (hasCustomUsername && now - lastChanged < sixtyDaysInMs) {
         const daysRemaining = Math.ceil((sixtyDaysInMs - (now - lastChanged)) / (24 * 60 * 60 * 1000));
         return res.status(403).json({ 
           message: `Username can only be changed once every 60 days. Wait ${daysRemaining} more days.`,
@@ -97,6 +105,7 @@ exports.updateProfile = async (req, res) => {
 
       updateData.username = username.replace(/\s+/g, '_').toLowerCase();
       updateData.username_last_changed = now.toISOString();
+      updateData.username_customized = true;
     }
 
     const { data, error } = await supabase
