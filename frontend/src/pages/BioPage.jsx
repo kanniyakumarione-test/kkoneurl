@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, GripVertical, ExternalLink, Eye, Palette, Save, AlertCircle, Play, Zap, Camera, Code, Share2, Briefcase, Mail } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Eye, Save, AlertCircle, Play, Zap, Share2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import * as api from '../api';
@@ -21,17 +21,17 @@ const SOCIAL_PLATFORMS = [
   { id: 'linkedin', icon: '💼', label: 'LinkedIn' },
 ];
 
-const BioPreview = ({ bioPage, theme }) => {
+const BioPreview = ({ bioPage, theme, className = "" }) => {
   const t = THEMES.find(t => t.id === theme) || THEMES[0];
   return (
-    <div className="w-[280px] h-[560px] bg-[#111] rounded-[40px] border-[8px] border-[#222] overflow-hidden shadow-2xl relative">
+    <div className={`w-[280px] h-[560px] bg-[#111] rounded-[40px] border-[8px] border-[#222] overflow-hidden shadow-2xl relative flex-shrink-0 ${className}`}>
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-[#222] rounded-b-2xl z-10" />
-      <div className="h-full p-8 flex flex-col items-center gap-2 overflow-y-auto" style={{ background: t.bg }}>
-        <div className="w-16 h-16 rounded-full border-2 mt-8 mb-2 flex items-center justify-center bg-white/5 overflow-hidden" style={{ borderColor: t.accent }}>
-          {bioPage.avatar ? <img src={bioPage.avatar} className="w-full h-full object-cover" /> : <span className="text-2xl">👤</span>}
+      <div className="h-full p-8 flex flex-col items-center gap-2 overflow-y-auto custom-scrollbar" style={{ background: t.bg }}>
+        <div className="w-16 h-16 rounded-full border-2 mt-8 mb-2 flex items-center justify-center bg-white/5 overflow-hidden flex-shrink-0" style={{ borderColor: t.accent }}>
+          {bioPage.avatar ? <img src={bioPage.avatar} className="w-full h-full object-cover" alt="Avatar" /> : <span className="text-2xl">👤</span>}
         </div>
-        <p className="text-sm font-bold text-white text-center truncate w-full">{bioPage.displayName}</p>
-        <p className="text-[10px] text-white/50 text-center mb-4 leading-relaxed line-clamp-2 px-4">{bioPage.bio}</p>
+        <p className="text-sm font-bold text-white text-center truncate w-full">{bioPage.displayName || 'Your Name'}</p>
+        <p className="text-[10px] text-white/50 text-center mb-4 leading-relaxed line-clamp-2 px-4">{bioPage.bio || 'Add your bio description...'}</p>
 
         {/* Social Icons Bar in Preview */}
         {Object.values(bioPage.socialLinks || {}).some(v => v) && (
@@ -74,6 +74,7 @@ const BioPage = ({ bioPage, setBioPage }) => {
   const [activeTab, setActiveTab] = useState('links');
   const [newLink, setNewLink] = useState({ label: '', url: '', icon: '🔗', color: '#6c63ff' });
   const [saving, setSaving] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   
   const [originalUsername, setOriginalUsername] = useState('');
   const [showAddEmbed, setShowAddEmbed] = useState(false);
@@ -112,7 +113,7 @@ const BioPage = ({ bioPage, setBioPage }) => {
       }
     };
     loadProfile();
-  }, []);
+  }, [setBioPage]);
 
   const handleSave = async () => {
     if (bioPage.username !== originalUsername && !canChangeUsername) {
@@ -121,7 +122,7 @@ const BioPage = ({ bioPage, setBioPage }) => {
 
     setSaving(true);
     try {
-      const response = await api.updateProfile({
+      await api.updateProfile({
         username: bioPage.username,
         displayName: bioPage.displayName,
         bio: bioPage.bio,
@@ -150,56 +151,59 @@ const BioPage = ({ bioPage, setBioPage }) => {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-7xl">
-      <div className="flex flex-col md:flex-row justify-between gap-4">
+    <div className="space-y-6 md:space-y-8 animate-fade-in max-w-7xl pb-24 md:pb-0">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-black font-display tracking-tight mb-2">Bio Page</h1>
-          <p className="text-white/40 text-sm">Your personal hub: <span className="text-purple-light font-bold">kkoneurl.kanniyakumarione.com/@{bioPage.username}</span></p>
+          <h1 className="text-3xl md:text-4xl font-black font-display tracking-tight mb-1">Bio Page</h1>
+          <p className="text-white/40 text-xs md:text-sm">Manage your personal hub: <span className="text-purple-light font-bold truncate">@{bioPage.username}</span></p>
         </div>
-        <div className="flex gap-3">
-          <a href={`/@${bioPage.username}`} target="_blank" className="btn btn-secondary !py-2 !px-4 text-xs font-bold uppercase tracking-widest flex items-center gap-2"><ExternalLink size={14} /> Visit Live</a>
-          <button className={`btn btn-primary !py-2 !px-4 text-xs font-bold uppercase tracking-widest ${saving ? 'opacity-50' : ''}`} onClick={handleSave} disabled={saving}><Save size={14} /> {saving ? 'Saving...' : 'Save Changes'}</button>
+        <div className="flex w-full md:w-auto gap-2 md:gap-3">
+          <a href={`/@${bioPage.username}`} target="_blank" rel="noreferrer" className="flex-1 md:flex-none btn btn-secondary !py-2 !px-4 text-[10px] md:text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2"><ExternalLink size={14} /> Visit</a>
+          <button className={`flex-1 md:flex-none btn btn-primary !py-2 !px-4 text-[10px] md:text-xs font-black uppercase tracking-widest ${saving ? 'opacity-50' : ''}`} onClick={handleSave} disabled={saving}>
+            <Save size={14} /> {saving ? 'Saving...' : 'Save'}
+          </button>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-12 gap-8">
+      <div className="grid lg:grid-cols-12 gap-8 relative">
+        {/* Editor Side */}
         <div className="lg:col-span-8 space-y-6">
-          <div className="card !p-0 overflow-hidden">
-            <div className="flex border-b border-white/5 overflow-x-auto no-scrollbar">
+          <div className="card !p-0 overflow-hidden border-white/5 bg-white/[0.02] backdrop-blur-xl">
+            <div className="flex border-b border-white/5 overflow-x-auto no-scrollbar scroll-smooth">
               {['links', 'social', 'embeds', 'profile', 'theme'].map(tab => (
-                <button key={tab} className={`flex-1 min-w-[80px] py-4 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-purple/10 text-purple border-b-2 border-purple' : 'text-white/40 hover:text-white hover:bg-white/5'}`} onClick={() => setActiveTab(tab)}>{tab}</button>
+                <button key={tab} className={`flex-1 min-w-[90px] py-4 md:py-5 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-purple/10 text-purple-light border-b-2 border-purple-light' : 'text-white/40 hover:text-white hover:bg-white/5'}`} onClick={() => setActiveTab(tab)}>{tab}</button>
               ))}
             </div>
 
-            <div className="p-6">
+            <div className="p-4 md:p-8">
               {activeTab === 'links' && (
                 <div className="space-y-4">
                   {bioPage.links.map(link => (
-                    <div key={link.id} className="flex items-center gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl group">
-                      <div className="w-10 h-10 rounded-xl bg-bg-secondary flex items-center justify-center text-xl">{link.icon}</div>
+                    <div key={link.id} className="flex items-center gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl group transition-all hover:border-white/10">
+                      <div className="w-10 h-10 rounded-xl bg-bg-secondary flex items-center justify-center text-xl flex-shrink-0">{link.icon}</div>
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-sm truncate">{link.label}</p>
-                        <p className="text-xs text-white/30 truncate">{link.url}</p>
+                        <p className="text-[10px] text-white/20 truncate font-mono">{link.url}</p>
                       </div>
                       <button className="p-2 text-white/20 hover:text-pink transition-colors" onClick={() => setBioPage(prev => ({ ...prev, links: prev.links.filter(l => l.id !== link.id) }))}><Trash2 size={16} /></button>
                     </div>
                   ))}
-                  <div className="card !bg-bg-secondary/50 border-dashed border-white/10 mt-8 p-6">
-                    <h4 className="text-sm font-bold mb-4 uppercase tracking-widest text-white/40">Add New Link</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <input className="input" placeholder="Link Title" value={newLink.label} onChange={e => setNewLink({...newLink, label: e.target.value})} />
+                  <div className="card !bg-bg-secondary/30 border-dashed border-white/10 mt-8 p-6">
+                    <h4 className="text-[10px] font-black mb-4 uppercase tracking-[0.2em] text-white/30">Add New Link</h4>
+                    <div className="grid grid-cols-1 gap-4">
+                      <input className="input" placeholder="Link Title (e.g. My Portfolio)" value={newLink.label} onChange={e => setNewLink({...newLink, label: e.target.value})} />
                       <input className="input" placeholder="URL (https://...)" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} />
                     </div>
-                    <button className="btn btn-secondary w-full mt-4 !py-3 !rounded-xl text-xs font-bold uppercase tracking-widest" onClick={addLink}><Plus size={14} /> Add to Page</button>
+                    <button className="btn btn-secondary w-full mt-4 !py-3 !rounded-xl text-[10px] font-black uppercase tracking-widest" onClick={addLink}><Plus size={14} /> Add to Page</button>
                   </div>
                 </div>
               )}
 
               {activeTab === 'social' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {SOCIAL_PLATFORMS.map(p => (
                     <div key={p.id} className="space-y-2">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-white/40">{p.icon} {p.label}</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center gap-2">{p.icon} {p.label}</label>
                       <input className="input" placeholder={`https://${p.id}.com/username`} value={bioPage.socialLinks?.[p.id] || ''} onChange={e => setBioPage(prev => ({ ...prev, socialLinks: { ...prev.socialLinks, [p.id]: e.target.value } }))} />
                     </div>
                   ))}
@@ -210,8 +214,8 @@ const BioPage = ({ bioPage, setBioPage }) => {
                 <div className="space-y-6">
                   {bioPage.embeds?.map((embed, i) => (
                     <div key={i} className="flex items-center gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl">
-                      <div className="w-10 h-10 rounded-xl bg-purple/10 flex items-center justify-center text-purple">{embed.type === 'youtube' ? <Play size={20} /> : <Zap size={20} />}</div>
-                      <div className="flex-1 min-w-0"><p className="font-bold text-sm uppercase tracking-widest">{embed.type}</p><p className="text-xs text-white/30 truncate">ID: {embed.id}</p></div>
+                      <div className="w-10 h-10 rounded-xl bg-purple/10 flex items-center justify-center text-purple-light">{embed.type === 'youtube' ? <Play size={20} /> : <Zap size={20} />}</div>
+                      <div className="flex-1 min-w-0"><p className="font-bold text-sm uppercase tracking-widest">{embed.type}</p><p className="text-[10px] text-white/30 truncate font-mono">ID: {embed.id}</p></div>
                       <button className="p-2 text-white/20 hover:text-pink transition-colors" onClick={() => setBioPage(prev => ({ ...prev, embeds: prev.embeds.filter((_, idx) => idx !== i) }))}><Trash2 size={16} /></button>
                     </div>
                   ))}
@@ -231,7 +235,7 @@ const BioPage = ({ bioPage, setBioPage }) => {
                       />
                       <div className="flex gap-2">
                         <button className="btn btn-secondary flex-1 !py-3" onClick={() => { setShowAddEmbed(false); setNewEmbed({ type: 'youtube', url: '' }); }}>Cancel</button>
-                        <button className="btn btn-primary flex-1 !py-3" onClick={() => {
+                        <button className="btn btn-primary flex-1 !py-3 font-black text-[10px] uppercase" onClick={() => {
                           const { type, url } = newEmbed;
                           if (!url) return;
                           let id = type === 'youtube' ? url.split('v=')[1]?.split('&')[0] || url.split('/').pop() : url.split('/track/')[1]?.split('?')[0];
@@ -240,56 +244,92 @@ const BioPage = ({ bioPage, setBioPage }) => {
                             setShowAddEmbed(false);
                             setNewEmbed({ type: 'youtube', url: '' });
                           }
-                        }}>Add</button>
+                        }}>Add Embed</button>
                       </div>
                     </div>
                   ) : (
-                    <button className="btn btn-secondary w-full !py-4 rounded-2xl border-dashed border-white/10 hover:border-purple/40" onClick={() => setShowAddEmbed(true)}>
-                      <Plus size={14} /> Add Embed
+                    <button className="btn btn-secondary w-full !py-5 rounded-2xl border-dashed border-white/10 hover:border-purple/40 group" onClick={() => setShowAddEmbed(true)}>
+                      <Plus size={14} className="group-hover:scale-125 transition-transform" /> Add Rich Media Content
                     </button>
                   )}
                 </div>
               )}
 
               {activeTab === 'profile' && (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Username</label>
                       <input className="input" value={bioPage.username} disabled={!canChangeUsername} onChange={e => setBioPage({...bioPage, username: e.target.value.toLowerCase().replace(/\s+/g, '_')})} />
                       {!canChangeUsername && (
-                        <p className="text-xs text-amber-300/90">
-                          Username locked. Try again in {daysRemaining} day{daysRemaining === 1 ? '' : 's'}.
+                        <p className="text-[10px] text-amber-300/80 flex items-center gap-1">
+                          <AlertCircle size={10} /> Username locked for {daysRemaining} days.
                         </p>
                       )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Display Name</label>
-                      <input className="input" value={bioPage.displayName} onChange={e => setBioPage({...bioPage, displayName: e.target.value})} />
+                      <input className="input" placeholder="e.g. John Doe" value={bioPage.displayName} onChange={e => setBioPage({...bioPage, displayName: e.target.value})} />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Bio Description</label>
-                    <textarea className="input min-h-[100px]" value={bioPage.bio} onChange={e => setBioPage({...bioPage, bio: e.target.value})} />
+                    <textarea className="input min-h-[120px] custom-scrollbar" placeholder="Tell the world about yourself..." value={bioPage.bio} onChange={e => setBioPage({...bioPage, bio: e.target.value})} />
                   </div>
                 </div>
               )}
 
               {activeTab === 'theme' && (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {THEMES.map(t => (
-                    <button key={t.id} className={`p-4 rounded-2xl border transition-all text-left space-y-3 ${bioPage.theme === t.id ? 'border-purple bg-purple/10' : 'border-white/5 bg-white/5 hover:border-white/20'}`} onClick={() => setBioPage({...bioPage, theme: t.id})}><div className="h-12 w-full rounded-lg" style={{ background: t.bg }} /><p className="text-[10px] font-black uppercase tracking-widest">{t.label}</p></button>
+                    <button key={t.id} className={`p-4 rounded-2xl border transition-all text-left space-y-3 ${bioPage.theme === t.id ? 'border-purple-light bg-purple/10' : 'border-white/5 bg-white/5 hover:border-white/20'}`} onClick={() => setBioPage({...bioPage, theme: t.id})}>
+                      <div className="h-16 w-full rounded-lg shadow-inner" style={{ background: t.bg }} />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-center">{t.label}</p>
+                    </button>
                   ))}
                 </div>
               )}
             </div>
           </div>
         </div>
-        <div className="lg:col-span-4 flex flex-col items-center sticky top-24 h-fit">
-          <p className="text-[10px] font-black uppercase tracking-widest text-white/20 text-center mb-6">Live Mobile Preview</p>
+
+        {/* Desktop Preview Sidebar */}
+        <div className="hidden lg:flex lg:col-span-4 flex-col items-center sticky top-24 h-fit">
+          <div className="flex items-center gap-2 mb-6">
+            <Eye size={12} className="text-white/20" />
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20">Live Mobile Preview</p>
+          </div>
           <BioPreview bioPage={bioPage} theme={bioPage.theme} />
         </div>
       </div>
+
+      {/* Floating Mobile Preview Button */}
+      <div className="lg:hidden fixed bottom-6 right-6 z-50">
+        <button 
+          onClick={() => setIsPreviewOpen(true)}
+          className="w-14 h-14 rounded-full bg-purple text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
+        >
+          <Eye size={24} />
+        </button>
+      </div>
+
+      {/* Mobile Preview Modal */}
+      {isPreviewOpen && (
+        <div className="lg:hidden fixed inset-0 z-[60] bg-bg-primary/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-fade-in">
+          <div className="absolute top-6 right-6">
+            <button 
+              onClick={() => setIsPreviewOpen(false)}
+              className="p-3 bg-white/5 rounded-full text-white/60 hover:text-white"
+            >
+              <Trash2 size={24} />
+            </button>
+          </div>
+          <div className="scale-[0.85] md:scale-100">
+            <BioPreview bioPage={bioPage} theme={bioPage.theme} />
+          </div>
+          <p className="mt-8 text-[10px] font-black uppercase tracking-widest text-white/20">Interactive Preview Mode</p>
+        </div>
+      )}
     </div>
   );
 };
