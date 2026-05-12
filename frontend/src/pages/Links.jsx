@@ -75,6 +75,7 @@ const LinkCard = ({ link, onDelete, onToggle, onCopy, onMove }) => {
 };
 
 const Links = ({ links, onDelete, onToggle, onAdd }) => {
+  const safeLinks = Array.isArray(links) ? links : [];
   const toast = useToast();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
@@ -86,7 +87,7 @@ const Links = ({ links, onDelete, onToggle, onAdd }) => {
     toast('Copied to clipboard!', 'success');
   };
 
-  const filtered = links.filter(l => {
+  const filtered = safeLinks.filter(l => {
     const matchesSearch = !search || 
       l.title?.toLowerCase().includes(search.toLowerCase()) || 
       l.short_code?.toLowerCase().includes(search.toLowerCase()) ||
@@ -106,7 +107,7 @@ const Links = ({ links, onDelete, onToggle, onAdd }) => {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black font-display tracking-tight mb-2">My Links</h1>
-          <p className="text-white/40 text-sm">Managing {links.length} links across all domains.</p>
+          <p className="text-white/40 text-sm">Managing {safeLinks.length} links across all domains.</p>
         </div>
         <button className="btn btn-primary !rounded-xl" onClick={onAdd}>
           <Plus size={18} /> Create Link

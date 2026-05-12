@@ -9,6 +9,7 @@ import {
 const COLORS = ['#6c63ff', '#00d4ff', '#43e97b', '#ff6584', '#ff9a3c'];
 
 const Analytics = ({ links }) => {
+  const safeLinks = Array.isArray(links) ? links : [];
   const [searchParams] = useSearchParams();
   const [selected, setSelected] = useState('');
 
@@ -16,12 +17,12 @@ const Analytics = ({ links }) => {
     const id = searchParams.get('id');
     if (id) {
       setSelected(id);
-    } else if (links[0]) {
-      setSelected(links[0]._id || links[0].id);
+    } else if (safeLinks[0]) {
+      setSelected(safeLinks[0]._id || safeLinks[0].id);
     }
-  }, [searchParams, links]);
+  }, [searchParams, safeLinks]);
 
-  const link = links.find(l => (l._id || l.id) === selected) || links[0];
+  const link = safeLinks.find(l => (l._id || l.id) === selected) || safeLinks[0];
 
   if (!link) return <div className="p-20 text-center text-white/40 font-bold">No links to analyze.</div>;
 
@@ -55,7 +56,7 @@ const Analytics = ({ links }) => {
           value={selected}
           onChange={e => setSelected(e.target.value)}
         >
-          {links.map(l => (
+          {safeLinks.map(l => (
             <option key={l._id} value={l._id}>{l.title || l.shortCode}</option>
           ))}
         </select>

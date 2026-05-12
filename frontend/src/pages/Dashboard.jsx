@@ -28,15 +28,16 @@ const StatCard = ({ icon, label, value, change, color, borderColor }) => (
 );
 
 const Dashboard = ({ links }) => {
+  const safeLinks = Array.isArray(links) ? links : [];
   const toast = useToast();
   const [period, setPeriod] = useState('7d');
 
-  const totalClicks = useMemo(() => (links || []).reduce((s, l) => s + (l.clicks || 0), 0), [links]);
-  const totalUnique = useMemo(() => (links || []).reduce((s, l) => s + (l.unique_clicks || 0), 0), [links]);
+  const totalClicks = useMemo(() => safeLinks.reduce((s, l) => s + (l.clicks || 0), 0), [safeLinks]);
+  const totalUnique = useMemo(() => safeLinks.reduce((s, l) => s + (l.unique_clicks || 0), 0), [safeLinks]);
   
   const chartData = useMemo(() => {
     const map = {};
-    (links || []).forEach(link => {
+    safeLinks.forEach(link => {
       const clicks = link.daily_clicks || link.dailyClicks || [];
       clicks.forEach(d => {
         map[d.date] = (map[d.date] || 0) + d.clicks;
@@ -46,9 +47,9 @@ const Dashboard = ({ links }) => {
       .map(([date, clicks]) => ({ date, clicks }))
       .sort((a, b) => a.date.localeCompare(b.date));
     return sorted.length > 0 ? sorted : [{ date: new Date().toISOString().split('T')[0], clicks: 0 }];
-  }, [links]);
+  }, [safeLinks]);
 
-  const topLinks = [...(links || [])].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5);
+  const topLinks = [...safeLinks].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5);
 
   return (
     <div className="space-y-8 animate-fade-in max-w-7xl">
@@ -56,7 +57,7 @@ const Dashboard = ({ links }) => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black font-display tracking-tight mb-2">Dashboard</h1>
-          <p className="text-white/40 text-sm">Welcome back! Tracking {links?.length || 0} active links.</p>
+          <p className="text-white/40 text-sm">Welcome back! Tracking {safeLinks.length} active links.</p>
         </div>
         <div className="flex bg-bg-card border border-white/10 p-1 rounded-xl">
           {['7d', '30d', '90d'].map(p => (
@@ -75,8 +76,8 @@ const Dashboard = ({ links }) => {
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={<MousePointerClick size={20} />} label="Total Clicks" value={totalClicks} change={0} color="purple" borderColor="from-purple to-purple-light" />
         <StatCard icon={<Users size={20} />} label="Unique Visitors" value={totalUnique} change={0} color="cyan" borderColor="from-cyan to-purple" />
-        <StatCard icon={<Link2 size={20} />} label="Active Links" value={links?.length || 0} change={0} color="green" borderColor="from-green to-cyan" />
-        <StatCard icon={<TrendingUp size={20} />} label="Avg. CTR" value={links?.length ? ((totalClicks / (links.length * 100)) * 100).toFixed(1) + '%' : '0%'} change={0} color="pink" borderColor="from-pink to-orange" />
+        <StatCard icon={<Link2 size={20} />} label="Active Links" value={safeLinks.length} change={0} color="green" borderColor="from-green to-cyan" />
+        <StatCard icon={<TrendingUp size={20} />} label="Avg. CTR" value={safeLinks.length ? ((totalClicks / (safeLinks.length * 100)) * 100).toFixed(1) + '%' : '0%'} change={0} color="pink" borderColor="from-pink to-orange" />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">

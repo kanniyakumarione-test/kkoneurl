@@ -17,14 +17,15 @@ const getQRUrl = (text, size, fg, bg) => {
 };
 
 const QRCode = ({ links }) => {
+  const safeLinks = Array.isArray(links) ? links : [];
   const toast = useToast();
-  const [selected, setSelected] = useState(links[0]?._id || '');
+  const [selected, setSelected] = useState(safeLinks[0]?._id || '');
   const [size, setSize] = useState(256);
   const [style, setStyle] = useState(QR_STYLES[0]);
   const [useCustom, setUseCustom] = useState(false);
   const [customUrl, setCustomUrl] = useState('');
 
-  const link = links.find(l => l._id === selected) || links[0];
+  const link = safeLinks.find(l => l._id === selected) || safeLinks[0];
   const domain = 'kkoneurl.kanniyakumarione.com';
   const qrText = useCustom ? (customUrl || `https://${domain}`) : `https://${domain}/${link?.short_code || ''}`;
   const qrSrc = getQRUrl(qrText, size, style.fg, style.bg);
@@ -67,7 +68,7 @@ const QRCode = ({ links }) => {
               <input className="input" placeholder="https://..." value={customUrl} onChange={e => setCustomUrl(e.target.value)} />
             ) : (
               <select className="input" value={selected} onChange={e => setSelected(e.target.value)}>
-                {links.map(l => (
+                {safeLinks.map(l => (
                   <option key={l._id} value={l._id}>{l.title || l.short_code}</option>
                 ))}
               </select>

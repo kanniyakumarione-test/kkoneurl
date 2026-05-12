@@ -8,14 +8,15 @@ const Topbar = ({ onMenuClick, onShorten }) => {
   const [showNotifs, setShowNotifs] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const dropdownRef = useRef(null);
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = safeNotifications.filter(n => !n.is_read).length;
 
   useEffect(() => {
     const loadNotifs = async () => {
       try {
         const { data } = await api.fetchNotifications();
-        setNotifications(data);
+        setNotifications(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Notif load error:', err);
       }
@@ -38,7 +39,7 @@ const Topbar = ({ onMenuClick, onShorten }) => {
   const handleMarkAllRead = async () => {
     try {
       await api.markAllNotificationsRead();
-      setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+      setNotifications(safeNotifications.map(n => ({ ...n, is_read: true })));
     } catch (err) {
       console.error(err);
     }
@@ -47,7 +48,7 @@ const Topbar = ({ onMenuClick, onShorten }) => {
   const handleMarkRead = async (id) => {
     try {
       await api.markNotificationRead(id);
-      setNotifications(notifications.map(n => n.id === id ? { ...n, is_read: true } : n));
+      setNotifications(safeNotifications.map(n => n.id === id ? { ...n, is_read: true } : n));
     } catch (err) {
       console.error(err);
     }
@@ -122,14 +123,14 @@ const Topbar = ({ onMenuClick, onShorten }) => {
                 )}
               </div>
               <div className="max-h-[400px] overflow-y-auto">
-                {notifications.length === 0 ? (
+                {safeNotifications.length === 0 ? (
                   <div className="p-10 text-center">
                     <Bell size={32} className="mx-auto mb-3 opacity-10" />
                     <p className="text-xs text-white/20 font-bold uppercase tracking-widest">No notifications yet</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-white/5">
-                    {notifications.map(n => (
+                    {safeNotifications.map(n => (
                       <div 
                         key={n.id} 
                         className={`p-4 hover:bg-white/5 transition-colors cursor-pointer group ${!n.is_read ? 'bg-purple/5' : ''}`}

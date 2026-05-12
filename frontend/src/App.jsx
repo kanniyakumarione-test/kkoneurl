@@ -88,9 +88,10 @@ function App() {
       try {
         setLoading(true);
         const { data } = await api.fetchLinks();
-        setLinks(data);
+        setLinks(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Failed to fetch links:', err);
+        setLinks([]);
       } finally {
         setLoading(false);
       }
@@ -101,7 +102,7 @@ function App() {
   const addLink = async (newLinkData) => {
     try {
       const { data } = await api.createLink(newLinkData);
-      setLinks(prev => [data, ...prev]);
+      setLinks(prev => [data, ...(Array.isArray(prev) ? prev : [])]);
       toast('Link created successfully!', 'success');
       return data;
     } catch (err) {
@@ -113,7 +114,7 @@ function App() {
   const deleteLink = async (id) => {
     try {
       await api.deleteLink(id);
-      setLinks(prev => prev.filter(l => (l._id || l.id) !== id));
+      setLinks(prev => (Array.isArray(prev) ? prev : []).filter(l => (l._id || l.id) !== id));
       toast('Link deleted', 'info');
     } catch (err) {
       toast('Delete failed', 'error');
@@ -123,7 +124,7 @@ function App() {
   const toggleLink = async (id) => {
     try {
       const { data } = await api.toggleLinkStatus(id);
-      setLinks(prev => prev.map(l => (l._id || l.id) === id ? data : l));
+      setLinks(prev => (Array.isArray(prev) ? prev : []).map(l => (l._id || l.id) === id ? data : l));
     } catch (err) {
       toast('Toggle failed', 'error');
     }
