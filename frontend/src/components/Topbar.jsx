@@ -64,8 +64,8 @@ const Topbar = ({ onMenuClick, onShorten }) => {
   };
 
   return (
-    <header className="sticky top-0 z-[90] h-16 border-b border-white/5 bg-bg-secondary/80 backdrop-blur-xl px-6 flex items-center justify-between gap-4">
-      <div className="flex items-center gap-4 flex-1">
+    <header className="sticky top-0 z-[90] h-16 border-b border-white/5 bg-bg-secondary/80 backdrop-blur-xl px-3 sm:px-4 md:px-6 flex items-center justify-between gap-2 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
         <button className="lg:hidden p-2 text-white/40 hover:text-white" onClick={onMenuClick}>
           <Menu size={20} />
         </button>
@@ -92,7 +92,7 @@ const Topbar = ({ onMenuClick, onShorten }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         {/* Notifications */}
         <div className="relative" ref={dropdownRef}>
           <button 
@@ -110,7 +110,7 @@ const Topbar = ({ onMenuClick, onShorten }) => {
           </button>
 
           {showNotifs && (
-            <div className="absolute right-0 mt-3 w-80 bg-bg-card border border-white/10 rounded-2xl shadow-2xl animate-scale-in z-[100] overflow-hidden">
+            <div className="absolute right-0 mt-3 w-[calc(100vw-1rem)] max-w-80 sm:w-80 bg-bg-card border border-white/10 rounded-2xl shadow-2xl animate-scale-in z-[100] overflow-hidden">
               <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/5">
                 <span className="text-[10px] font-black uppercase tracking-widest text-white/40">Notifications</span>
                 {unreadCount > 0 && (
@@ -161,7 +161,7 @@ const Topbar = ({ onMenuClick, onShorten }) => {
 
         {/* Create Button */}
         <button 
-          className="btn btn-primary !py-2 !px-5 !rounded-xl text-sm" 
+          className="btn btn-primary !py-2 !px-3 sm:!px-5 !rounded-xl text-sm min-w-0" 
           onClick={onShorten}
         >
           <Plus size={18} className="md:hidden" />

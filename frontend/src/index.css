@@ -27,6 +27,18 @@
 }
 
 @layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-bg-primary text-[#f0f0ff] antialiased min-h-screen font-sans;
   }
@@ -46,10 +58,10 @@
     @apply bg-bg-card text-[#f0f0ff] border border-white/10 hover:bg-bg-hover hover:border-purple hover:-translate-y-px;
   }
   .card {
-    @apply bg-bg-card border border-white/10 rounded-lg p-6 transition-all duration-200 hover:border-purple/20 hover:shadow-card;
+    @apply bg-bg-card border border-white/10 rounded-lg p-4 sm:p-6 transition-all duration-200 hover:border-purple/20 hover:shadow-card;
   }
   .input {
-    @apply bg-bg-secondary border border-white/10 rounded-md px-4 py-3 text-sm text-[#f0f0ff] w-full focus:border-purple outline-none transition-all;
+    @apply bg-bg-secondary border border-white/10 rounded-md px-3 sm:px-4 py-3 text-sm text-[#f0f0ff] w-full min-w-0 focus:border-purple outline-none transition-all;
   }
   /* Prevent browser auto-fill from breaking the dark theme */
   input:-webkit-autofill,
