@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   TrendingUp, Link2, MousePointerClick, Users,
   ArrowUpRight, Clock, Copy, ExternalLink, BarChart3
@@ -31,6 +31,23 @@ const Dashboard = ({ links }) => {
   const safeLinks = Array.isArray(links) ? links : [];
   const toast = useToast();
   const [period, setPeriod] = useState('7d');
+  const chartContainerRef = useRef(null);
+  const [chartReady, setChartReady] = useState(false);
+
+  useEffect(() => {
+    const el = chartContainerRef.current;
+    if (!el) return undefined;
+
+    const updateReady = () => {
+      const { width, height } = el.getBoundingClientRect();
+      setChartReady(width > 0 && height > 0);
+    };
+
+    updateReady();
+    const observer = new ResizeObserver(updateReady);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const totalClicks = useMemo(() => safeLinks.reduce((s, l) => s + (l.clicks || 0), 0), [safeLinks]);
   const totalUnique = useMemo(() => safeLinks.reduce((s, l) => s + (l.unique_clicks || 0), 0), [safeLinks]);
@@ -93,24 +110,26 @@ const Dashboard = ({ links }) => {
               <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">Realtime</span>
             </div>
           </div>
-          <div style={{ height: 240, width: '100%', minHeight: 240, minWidth: 0 }}>
+          <div ref={chartContainerRef} style={{ height: 240, width: '100%', minHeight: 240, minWidth: 0 }}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="pgrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6c63ff" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#6c63ff" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="date" hide />
-                <YAxis hide />
-                <Tooltip 
-                  contentStyle={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
-                  itemStyle={{ color: '#9b94ff', fontWeight: 'bold' }}
-                />
-                <Area type="monotone" dataKey="clicks" stroke="#6c63ff" strokeWidth={3} fillOpacity={1} fill="url(#pgrad)" />
-              </AreaChart>
+              {chartReady ? (
+                <AreaChart data={chartData}>
+                  <defs>
+                    <linearGradient id="pgrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6c63ff" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#6c63ff" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis dataKey="date" hide />
+                  <YAxis hide />
+                  <Tooltip 
+                    contentStyle={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }}
+                    itemStyle={{ color: '#9b94ff', fontWeight: 'bold' }}
+                  />
+                  <Area type="monotone" dataKey="clicks" stroke="#6c63ff" strokeWidth={3} fillOpacity={1} fill="url(#pgrad)" />
+                </AreaChart>
+              ) : null}
             </ResponsiveContainer>
           </div>
         </div>

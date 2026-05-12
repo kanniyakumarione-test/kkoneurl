@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BarChart3, Globe, Smartphone, Monitor, Tablet, TrendingUp } from 'lucide-react';
 import {
@@ -12,6 +12,8 @@ const Analytics = ({ links }) => {
   const safeLinks = Array.isArray(links) ? links : [];
   const [searchParams] = useSearchParams();
   const [selected, setSelected] = useState('');
+  const trendChartRef = useRef(null);
+  const [trendChartReady, setTrendChartReady] = useState(false);
 
   useEffect(() => {
     const id = searchParams.get('id');
@@ -21,6 +23,21 @@ const Analytics = ({ links }) => {
       setSelected(safeLinks[0]._id || safeLinks[0].id);
     }
   }, [searchParams, safeLinks]);
+
+  useEffect(() => {
+    const el = trendChartRef.current;
+    if (!el) return undefined;
+
+    const updateReady = () => {
+      const { width, height } = el.getBoundingClientRect();
+      setTrendChartReady(width > 0 && height > 0);
+    };
+
+    updateReady();
+    const observer = new ResizeObserver(updateReady);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const link = safeLinks.find(l => (l._id || l.id) === selected) || safeLinks[0];
 
@@ -93,21 +110,23 @@ const Analytics = ({ links }) => {
             <h3 className="font-bold">Click Trend</h3>
             <span className="badge bg-green/10 text-green"><TrendingUp size={12} /> +14.2%</span>
           </div>
-          <div style={{ height: 220, width: '100%', minHeight: 220, minWidth: 0 }}>
+          <div ref={trendChartRef} style={{ height: 220, width: '100%', minHeight: 220, minWidth: 0 }}>
             <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <AreaChart data={dailyClicks}>
-                <defs>
-                  <linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6c63ff" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#6c63ff" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-                <XAxis dataKey="date" hide />
-                <YAxis hide />
-                <Tooltip contentStyle={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} />
-                <Area type="monotone" dataKey="clicks" stroke="#6c63ff" strokeWidth={3} fill="url(#aG)" />
-              </AreaChart>
+              {trendChartReady ? (
+                <AreaChart data={dailyClicks}>
+                  <defs>
+                    <linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#6c63ff" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="#6c63ff" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis dataKey="date" hide />
+                  <YAxis hide />
+                  <Tooltip contentStyle={{ background: '#13131f', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px' }} />
+                  <Area type="monotone" dataKey="clicks" stroke="#6c63ff" strokeWidth={3} fill="url(#aG)" />
+                </AreaChart>
+              ) : null}
             </ResponsiveContainer>
           </div>
         </div>

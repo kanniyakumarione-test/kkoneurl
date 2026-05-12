@@ -1,7 +1,27 @@
 import axios from 'axios';
 
+const resolveApiBaseUrl = () => {
+  const raw = import.meta.env.VITE_API_URL;
+
+  if (raw && /^https?:\/\//i.test(raw)) return raw;
+
+  // Handle relative values like "/api" that can break on some production hosts.
+  if (raw && raw.startsWith('/')) {
+    if (typeof window !== 'undefined' && /localhost|127\.0\.0\.1/i.test(window.location.hostname)) {
+      return `http://localhost:5000${raw}`;
+    }
+    return `https://kkoneurl.kanniyakumarione.com${raw}`;
+  }
+
+  if (typeof window !== 'undefined' && /localhost|127\.0\.0\.1/i.test(window.location.hostname)) {
+    return 'http://localhost:5000/api';
+  }
+
+  return 'https://kkoneurl.kanniyakumarione.com/api';
+};
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: resolveApiBaseUrl(),
 });
 
 // Automatically attach token to every request
