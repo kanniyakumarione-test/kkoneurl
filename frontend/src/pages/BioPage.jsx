@@ -31,17 +31,46 @@ const BioPreview = ({ bioPage, theme }) => {
           {bioPage.avatar ? <img src={bioPage.avatar} className="w-full h-full object-cover" /> : <span className="text-2xl">👤</span>}
         </div>
         <p className="text-sm font-bold text-white text-center truncate w-full">{bioPage.displayName}</p>
-        <p className="text-[10px] text-white/50 text-center mb-4 leading-relaxed">{bioPage.bio}</p>
-        <div className="w-full space-y-2">
+        <p className="text-[10px] text-white/50 text-center mb-4 leading-relaxed line-clamp-2 px-4">{bioPage.bio}</p>
+
+        {/* Social Icons Bar in Preview */}
+        {Object.values(bioPage.socialLinks || {}).some(v => v) && (
+          <div className="flex flex-wrap justify-center gap-2 mb-4">
+             {Object.entries(bioPage.socialLinks).map(([id, url]) => url && (
+               <div key={id} className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-[10px]">
+                 <Share2 size={10} className="text-white/40" />
+               </div>
+             ))}
+          </div>
+        )}
+
+        <div className="w-full space-y-2 mb-4">
           {bioPage.links.map(link => (
-            <div key={link.id} className="w-full p-2.5 rounded-xl border border-white/10 bg-white/5 flex items-center gap-2 transition-all hover:scale-[1.02]" style={{ borderColor: `${link.color}30` }}>
+            <div key={link.id} className="w-full p-2.5 rounded-xl border border-white/10 bg-white/5 flex items-center gap-2 transition-all" style={{ borderColor: `${link.color}30` }}>
               <span className="text-xs">{link.icon}</span>
               <span className="text-[10px] font-bold text-white flex-1 truncate">{link.label}</span>
               <ExternalLink size={10} className="text-white/20" />
             </div>
           ))}
         </div>
-        <p className="mt-auto pt-4 text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: t.accent }}>kkoneurl</p>
+
+        {/* Embeds in Preview */}
+        {bioPage.embeds?.slice(0, 1).map((embed, i) => (
+          <div key={i} className="w-full aspect-video rounded-xl bg-black/40 border border-white/5 flex flex-col items-center justify-center gap-2 mb-4">
+            <Play size={20} className="text-white/20" />
+            <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest">{embed.type} preview</span>
+          </div>
+        ))}
+
+        {/* Newsletter in Preview */}
+        {bioPage.newsletter?.enabled && (
+          <div className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 mb-4 space-y-2">
+            <p className="text-[9px] font-black uppercase text-white tracking-widest">{bioPage.newsletter.title}</p>
+            <div className="h-7 w-full bg-white/5 border border-white/10 rounded-lg" />
+          </div>
+        )}
+
+        <p className="mt-auto pt-4 text-[9px] font-black uppercase tracking-[0.2em] opacity-40" style={{ color: t.accent }}>Powered by kkoneurl</p>
       </div>
     </div>
   );
@@ -138,7 +167,7 @@ const BioPage = ({ bioPage, setBioPage }) => {
           <p className="text-white/40 text-sm">Your personal hub: <span className="text-purple-light font-bold">kkoneurl.vercel.app/@{bioPage.username}</span></p>
         </div>
         <div className="flex gap-3">
-          <a href={`/@${bioPage.username}`} target="_blank" className="btn btn-secondary !py-2 !px-4 text-xs font-bold uppercase tracking-widest flex items-center gap-2"><Eye size={14} /> Preview</a>
+          <a href={`/@${bioPage.username}`} target="_blank" className="btn btn-secondary !py-2 !px-4 text-xs font-bold uppercase tracking-widest flex items-center gap-2"><ExternalLink size={14} /> Visit Live</a>
           <button className={`btn btn-primary !py-2 !px-4 text-xs font-bold uppercase tracking-widest ${saving ? 'opacity-50' : ''}`} onClick={handleSave} disabled={saving}><Save size={14} /> {saving ? 'Saving...' : 'Save Changes'}</button>
         </div>
       </div>
