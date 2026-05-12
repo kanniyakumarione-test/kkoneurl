@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Private app routes
+Disallow: /dashboard
+Disallow: /links
+Disallow: /analytics
+Disallow: /qr
+Disallow: /bio
+Disallow: /settings
+
+Sitemap: https://kkoneurl.kanniyakumarione.com/sitemap.xml
