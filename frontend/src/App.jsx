@@ -78,6 +78,12 @@ function App() {
   });
 
   useEffect(() => {
+    if (user && location.pathname === '/login') {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [user, location.pathname, navigate]);
+
+  useEffect(() => {
     if (location.state?.pendingUrl && user) {
       setInitialUrl(location.state.pendingUrl);
       setShowCreate(true);
