@@ -37,12 +37,12 @@ const Sidebar = ({ open, onClose, links = [] }) => {
       )}
 
       <aside className={`
-        fixed lg:sticky top-0 left-0 h-dvh w-[86vw] max-w-[280px] lg:w-[280px] bg-bg-secondary border-r border-white/5 
+        fixed lg:sticky top-0 left-0 h-screen w-[280px] bg-bg-secondary border-r border-white/5 
         flex flex-col z-[101] transition-transform duration-300 ease-in-out
         ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
         {/* Logo */}
-        <div className="p-4 sm:p-6 flex items-center justify-between">
+        <div className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-gradient-to-br from-purple to-purple-dark rounded-xl flex items-center justify-center shadow-lg shadow-purple/30">
               <Zap size={18} fill="white" className="text-white" />
@@ -55,7 +55,7 @@ const Sidebar = ({ open, onClose, links = [] }) => {
         </div>
 
         {/* Plan Info */}
-        <div className="px-4 sm:px-6 mb-4 sm:mb-6">
+        <div className="px-6 mb-6">
           <div className="bg-bg-card border border-white/5 p-4 rounded-2xl">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] font-black uppercase tracking-widest text-purple-light">Free Plan</span>
@@ -71,7 +71,7 @@ const Sidebar = ({ open, onClose, links = [] }) => {
         </div>
 
         {/* Nav Links */}
-        <nav className="flex-1 px-3 sm:px-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-4 space-y-1">
           {visibleNavItems.map(item => (
             <NavLink
               key={item.path}
@@ -94,7 +94,7 @@ const Sidebar = ({ open, onClose, links = [] }) => {
         </nav>
 
         {/* User Profile */}
-        <div className="p-3 sm:p-4 mt-auto">
+        <div className="p-4 mt-auto">
           <div 
             className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-purple/30 transition-colors cursor-pointer group relative"
             onClick={() => navigate('/settings')}

@@ -43,14 +43,14 @@ const AppLayout = ({ children, onShorten, links }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-dvh bg-bg-primary font-sans text-[#f0f0ff] overflow-x-hidden">
+    <div className="flex min-h-screen bg-bg-primary font-sans text-[#f0f0ff]">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} links={links} />
-      <div className="flex-1 flex flex-col min-w-0 min-h-dvh overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <Topbar
           onMenuClick={() => setSidebarOpen(true)}
           onShorten={onShorten}
         />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 lg:p-10 scroll-smooth">
+        <main className="flex-1 overflow-y-auto p-6 lg:p-10 scroll-smooth">
           {children}
         </main>
       </div>
