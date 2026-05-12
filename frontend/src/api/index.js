@@ -30,6 +30,13 @@ export const generateApiKey = () => API.post('/auth/generate-api-key');
 export const signupNewsletter = (username, email) => API.post(`/auth/newsletter/${username}/signup`, { email });
 
 export const fetchNotifications = () => API.get('/notifications');
+export const deleteNotification = (id) => API.delete(`/notifications/${id}`);
+
+// Bundles
+export const fetchBundles = () => API.get('/bundles');
+export const createBundle = (data) => API.post('/bundles', data);
+export const moveLinkToBundle = (linkId, bundleId) => API.post('/bundles/move', { linkId, bundleId });
+export const deleteBundle = (id) => API.delete(`/bundles/${id}`);
 export const markNotificationRead = (id) => API.patch(`/notifications/${id}/read`);
 export const markAllNotificationsRead = () => API.patch('/notifications/read-all');
 

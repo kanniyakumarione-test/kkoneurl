@@ -3,92 +3,72 @@ import {
   Search, Plus, Copy, ExternalLink, Trash2,
   Lock, Clock, Tag, Filter, QrCode, Link2
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import MoveToBundleModal from '../components/MoveToBundleModal';
+import { useAuth } from '../context/AuthContext';
 
-const LinkCard = ({ link, onDelete, onToggle, onCopy }) => {
+const LinkCard = ({ link, onDelete, onToggle, onCopy, onMove }) => {
   const isExpired = link.expiresAt && new Date(link.expiresAt) < new Date();
+  const active = link.is_active ?? link.isActive ?? true;
+  const navigate = useNavigate();
 
-    const active = link.is_active ?? link.isActive ?? true;
-    return (
-      <div className={`
-        card !p-0 overflow-hidden group transition-all
-        ${!active ? 'opacity-60 grayscale' : 'hover:-translate-y-1'}
-      `}>
-      <div className="p-5 flex flex-col md:flex-row gap-6">
-        {/* Favicon / Icon */}
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple to-purple-dark flex items-center justify-center text-xl font-black text-white shadow-lg shadow-purple/20 shrink-0">
-          {link.title?.[0]?.toUpperCase() || '🔗'}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap mb-2">
-            <h3 className="font-bold text-lg leading-tight truncate">{link.title || link.short_code}</h3>
-            {link.password && <span className="badge bg-orange/10 text-orange border border-orange/20"><Lock size={10} /> Protected</span>}
-            {isExpired && <span className="badge bg-pink/10 text-pink border border-pink/20"><Clock size={10} /> Expired</span>}
+  return (
+    <div className={`card !p-4 group transition-all ${!active ? 'opacity-60 grayscale' : 'hover:border-purple/30'}`}>
+      <div className="flex flex-col md:flex-row md:items-center gap-4">
+        {/* Row 1: Icon + Title + Status (Always horizontal) */}
+        <div className="flex items-center gap-4 w-full md:w-auto">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple to-purple-dark flex items-center justify-center text-lg font-black text-white shadow-lg shrink-0">
+            {link.title?.[0]?.toUpperCase() || '🔗'}
           </div>
           
-          <div className="flex items-center gap-2 mb-4">
-            <a href={`https://kkoneurl.vercel.app/${link.short_code}`} target="_blank" className="text-purple-light font-bold text-sm hover:underline">
-              kkoneurl.vercel.app/{link.short_code}
-            </a>
-            <span className="text-white/20">→</span>
-            <span className="text-white/40 text-xs truncate max-w-[300px]">{link.original_url || link.originalUrl}</span>
-          </div>
-
-          <div className="flex gap-2 flex-wrap">
-            {link.tags?.map(t => (
-              <span key={t} className="px-2 py-0.5 rounded-lg bg-white/5 border border-white/5 text-[10px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-1">
-                <Tag size={10} /> {t}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Analytics Summary */}
-        <div className="flex gap-8 items-center bg-white/5 px-6 rounded-2xl border border-white/5">
-          <div className="text-center">
-            <p className="text-lg font-black font-display leading-none">{(link.clicks || 0).toLocaleString()}</p>
-            <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1">Clicks</p>
-          </div>
-          <div className="text-center">
-            <p className="text-lg font-black font-display leading-none">{Math.round(((link.unique_clicks || link.uniqueClicks || 0) / (link.clicks || 1)) * 100)}%</p>
-            <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1">CTR</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-0.5">
+              <h3 className="font-bold text-sm truncate">{link.title || link.short_code}</h3>
+              {link.password && <Lock size={12} className="text-orange" />}
+              <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${active ? 'bg-green shadow-[0_0_8px_rgba(67,233,123,0.5)]' : 'bg-white/20'}`} />
+            </div>
+            <div className="flex items-center gap-1.5 text-[11px]">
+              <a href={`https://kkoneurl.vercel.app/${link.short_code}`} target="_blank" className="text-purple-light font-bold hover:underline shrink-0">
+                /{link.short_code}
+              </a>
+              <span className="text-white/10">|</span>
+              <span className="text-white/30 truncate">{link.original_url || link.originalUrl}</span>
+            </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex flex-row md:flex-col justify-center gap-2">
-          <button 
-            onClick={() => onToggle(link._id)} 
-            className={`p-2.5 rounded-xl border transition-all ${active ? 'bg-green/10 border-green/20 text-green hover:bg-green/20' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'}`}
-            title={active ? 'Deactivate' : 'Activate'}
-          >
-            <div className={`w-2 h-2 rounded-full mx-auto ${active ? 'bg-green shadow-[0_0_8px_rgba(67,233,123,0.5)]' : 'bg-white/20'}`} />
-          </button>
-          <button onClick={() => onCopy(`https://kkoneurl.vercel.app/${link.short_code}`)} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-white hover:border-purple/40 hover:bg-purple/10 transition-all" title="Copy">
-            <Copy size={18} />
-          </button>
-          <button className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-cyan hover:border-cyan/40 hover:bg-cyan/10 transition-all" title="Move to Bundle">
-            <Tag size={18} />
-          </button>
-          <button onClick={() => onDelete(link._id)} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-white/40 hover:text-pink hover:border-pink/40 hover:bg-pink/10 transition-all" title="Delete">
-            <Trash2 size={18} />
-          </button>
-        </div>
-      </div>
+        {/* Row 2: Stats + Actions (Wraps on mobile) */}
+        <div className="flex items-center justify-between md:justify-end gap-6 w-full md:flex-1">
+          {/* Minimal Stats */}
+          <div className="flex gap-4 px-3 py-1.5 bg-white/5 rounded-xl border border-white/5">
+            <div className="text-center min-w-[30px]">
+              <p className="text-sm font-black font-display leading-none">{link.clicks || 0}</p>
+              <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-0.5">Clicks</p>
+            </div>
+            <div className="text-center min-w-[30px]">
+              <p className="text-sm font-black font-display leading-none">{Math.round(((link.unique_clicks || 0) / (link.clicks || 1)) * 100)}%</p>
+              <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-0.5">CTR</p>
+            </div>
+          </div>
 
-      {/* Toggle Row */}
-      <div className="px-5 py-3 bg-white/5 border-t border-white/5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${active ? 'bg-green' : 'bg-white/20'}`} />
-          <span className="text-[11px] font-bold text-white/40 uppercase tracking-widest">
-            {active ? 'Live' : 'Inactive'}
-          </span>
+          {/* Compact Actions */}
+          <div className="flex items-center gap-0.5">
+            <button onClick={() => onCopy(`https://kkoneurl.vercel.app/${link.short_code}`)} className="p-2.5 rounded-lg hover:bg-white/5 text-white/20 hover:text-white transition-all" title="Copy">
+              <Copy size={16} />
+            </button>
+            <button onClick={() => onMove(link)} className="p-2.5 rounded-lg hover:bg-white/5 text-white/20 hover:text-cyan transition-all" title="Move to Bundle">
+              <Tag size={16} />
+            </button>
+            <button onClick={() => navigate(`/analytics?id=${link._id || link.id}`)} className="p-2.5 rounded-lg hover:bg-white/5 text-white/20 hover:text-purple-light transition-all" title="Analytics">
+              <ExternalLink size={16} />
+            </button>
+            <div className="w-[1px] h-4 bg-white/5 mx-1" />
+            <button onClick={() => onDelete(link._id || link.id)} className="p-2.5 rounded-lg hover:bg-pink/10 text-white/20 hover:text-pink transition-all" title="Delete">
+              <Trash2 size={16} />
+            </button>
+          </div>
         </div>
-        <button className="text-xs font-bold text-purple-light hover:text-white transition-colors flex items-center gap-1">
-          <ExternalLink size={12} /> View Full Analytics
-        </button>
       </div>
     </div>
   );
@@ -98,6 +78,8 @@ const Links = ({ links, onDelete, onToggle, onAdd }) => {
   const toast = useToast();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  const [selectedLink, setSelectedLink] = useState(null);
+  const { refreshProfile } = useAuth();
 
   const handleCopy = (shortUrl) => {
     navigator.clipboard.writeText(shortUrl);
@@ -167,10 +149,18 @@ const Links = ({ links, onDelete, onToggle, onAdd }) => {
           </div>
         ) : (
           filtered.map(link => (
-            <LinkCard key={link._id} link={link} onDelete={onDelete} onToggle={onToggle} onCopy={handleCopy} />
+            <LinkCard key={link._id} link={link} onDelete={onDelete} onToggle={onToggle} onCopy={handleCopy} onMove={setSelectedLink} />
           ))
         )}
       </div>
+
+      {selectedLink && (
+        <MoveToBundleModal 
+          link={selectedLink} 
+          onClose={() => setSelectedLink(null)} 
+          onUpdate={refreshProfile}
+        />
+      )}
     </div>
   );
 };

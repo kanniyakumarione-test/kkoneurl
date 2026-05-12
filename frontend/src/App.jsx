@@ -102,7 +102,7 @@ function App() {
       toast('Link created successfully!', 'success');
       return data;
     } catch (err) {
-      toast('Failed to create link', 'error');
+      toast(err.response?.data?.message || 'Failed to create link', 'error');
       throw err;
     }
   };

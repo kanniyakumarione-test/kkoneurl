@@ -17,6 +17,7 @@ app.use(morgan('dev'));
 // 3. API Routes
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/links', require('./routes/link.routes'));
+app.use('/api/bundles', require('./routes/bundle.routes'));
 app.use('/api/notifications', require('./routes/notification.routes'));
 
 // Public Stats for Landing Page

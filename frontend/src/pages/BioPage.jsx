@@ -62,14 +62,6 @@ const BioPreview = ({ bioPage, theme }) => {
           </div>
         ))}
 
-        {/* Newsletter in Preview */}
-        {bioPage.newsletter?.enabled && (
-          <div className="w-full p-4 rounded-2xl bg-white/5 border border-white/10 mb-4 space-y-2">
-            <p className="text-[9px] font-black uppercase text-white tracking-widest">{bioPage.newsletter.title}</p>
-            <div className="h-7 w-full bg-white/5 border border-white/10 rounded-lg" />
-          </div>
-        )}
-
         <p className="mt-auto pt-4 text-[9px] font-black uppercase tracking-[0.2em] opacity-40" style={{ color: t.accent }}>Powered by kkoneurl</p>
       </div>
     </div>
@@ -102,7 +94,6 @@ const BioPage = ({ bioPage, setBioPage }) => {
           links: data.bio_links || [],
           socialLinks: data.social_links || {},
           embeds: data.embeds || [],
-          newsletter: data.newsletter_settings || { enabled: false, title: 'Join my newsletter' }
         };
         setBioPage(profile);
         setOriginalUsername(profile.username);
@@ -139,7 +130,6 @@ const BioPage = ({ bioPage, setBioPage }) => {
         bio_links: bioPage.links,
         social_links: bioPage.socialLinks,
         embeds: bioPage.embeds,
-        newsletter_settings: bioPage.newsletter
       });
       
       toast('Bio page saved successfully! ✨', 'success');
@@ -276,13 +266,6 @@ const BioPage = ({ bioPage, setBioPage }) => {
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Bio Description</label>
                     <textarea className="input min-h-[100px]" value={bioPage.bio} onChange={e => setBioPage({...bioPage, bio: e.target.value})} />
-                  </div>
-                  <div className="p-4 bg-purple/5 border border-purple/20 rounded-2xl space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div><p className="font-bold text-sm">Newsletter Signup</p><p className="text-xs text-white/40">Allow users to join your list</p></div>
-                      <button className={`w-12 h-6 rounded-full transition-all ${bioPage.newsletter?.enabled ? 'bg-purple' : 'bg-white/10'}`} onClick={() => setBioPage({...bioPage, newsletter: {...bioPage.newsletter, enabled: !bioPage.newsletter?.enabled}})}><div className={`w-4 h-4 bg-white rounded-full transition-all ${bioPage.newsletter?.enabled ? 'translate-x-7' : 'translate-x-1'}`} /></button>
-                    </div>
-                    {bioPage.newsletter?.enabled && <input className="input !bg-black/20" placeholder="Newsletter Title" value={bioPage.newsletter.title} onChange={e => setBioPage({...bioPage, newsletter: {...bioPage.newsletter, title: e.target.value}})} />}
                   </div>
                 </div>
               )}

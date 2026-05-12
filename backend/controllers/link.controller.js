@@ -3,6 +3,20 @@ const supabase = require('../config/supabase');
 exports.shortenUrl = async (req, res) => {
   try {
     const { originalUrl, customSlug, title, password, expiresAt, tags, device_routing, geo_redirects } = req.body;
+    
+    // 🛡️ Global Limit Check (100 links max per user)
+    const { count, error: countError } = await supabase
+      .from('links')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', req.user.id);
+
+    if (countError) throw countError;
+    if (count >= 100) {
+      return res.status(403).json({ 
+        message: 'Link limit reached (100/100). Please delete old links to create more.' 
+      });
+    }
+
     const shortCode = customSlug || Math.random().toString(36).substring(2, 8);
     const tagsArray = Array.isArray(tags) ? tags : (tags ? tags.split(',').map(t => t.trim()) : []);
 
@@ -115,10 +129,15 @@ exports.redirectUrl = async (req, res) => {
       }
     }
 
-    // Device Routing (Simple check)
-    const deviceType = userAgent.includes('Mobi') ? 'mobile' : 'desktop';
-    if (link.device_routing && link.device_routing[deviceType]) {
-      finalUrl = link.device_routing[deviceType];
+    // Device Routing (Smart detection)
+    if (link.device_routing) {
+      if (userAgent.includes('iPhone') || userAgent.includes('iPad') || userAgent.includes('iPod')) {
+        if (link.device_routing.ios) finalUrl = link.device_routing.ios;
+      } else if (userAgent.includes('Android')) {
+        if (link.device_routing.android) finalUrl = link.device_routing.android;
+      } else if (userAgent.includes('Mobi')) {
+        if (link.device_routing.mobile) finalUrl = link.device_routing.mobile;
+      }
     }
 
     // Geo-Redirects (Placeholder for now, requires a Geo-IP lookup)

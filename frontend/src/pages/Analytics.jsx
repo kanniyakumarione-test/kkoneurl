@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { BarChart3, Globe, Smartphone, Monitor, Tablet, TrendingUp } from 'lucide-react';
 import {
   AreaChart, Area, BarChart, Bar, Cell,
@@ -8,8 +9,19 @@ import {
 const COLORS = ['#6c63ff', '#00d4ff', '#43e97b', '#ff6584', '#ff9a3c'];
 
 const Analytics = ({ links }) => {
-  const [selected, setSelected] = useState(links[0]?._id || '');
-  const link = links.find(l => l._id === selected) || links[0];
+  const [searchParams] = useSearchParams();
+  const [selected, setSelected] = useState('');
+
+  useEffect(() => {
+    const id = searchParams.get('id');
+    if (id) {
+      setSelected(id);
+    } else if (links[0]) {
+      setSelected(links[0]._id || links[0].id);
+    }
+  }, [searchParams, links]);
+
+  const link = links.find(l => (l._id || l.id) === selected) || links[0];
 
   if (!link) return <div className="p-20 text-center text-white/40 font-bold">No links to analyze.</div>;
 
