@@ -56,19 +56,6 @@ const AdminPanel = () => {
           <p className="text-white/40 text-sm mt-4 max-w-md">Global platform oversight, user management, and link analytics across the entire kkoneurl ecosystem.</p>
         </div>
         
-        <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 backdrop-blur-sm">
-          <div className="flex -space-x-2">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="w-8 h-8 rounded-full border-2 border-bg-primary bg-gradient-to-br from-purple/50 to-cyan/50 flex items-center justify-center text-[10px] font-bold">
-                {String.fromCharCode(65 + i)}
-              </div>
-            ))}
-          </div>
-          <div className="text-xs">
-            <p className="text-white font-bold">Active Sessions</p>
-            <p className="text-white/40">Real-time monitoring</p>
-          </div>
-        </div>
       </div>
 
       {/* Stats Grid */}
@@ -198,40 +185,83 @@ const AdminPanel = () => {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {links.map((l) => (
-            <div key={l.id} className="card bg-white/[0.02] border-white/5 group hover:border-white/10 transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <div className="p-2 bg-white/5 rounded-lg text-white/40 group-hover:text-purple-light transition-colors">
-                  <Globe size={18} />
-                </div>
-                {l.is_active ? (
-                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green/10 text-green text-[10px] font-black uppercase">
-                    <CheckCircle2 size={10} /> Active
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-red/10 text-red text-[10px] font-black uppercase">
-                    <AlertCircle size={10} /> Disabled
-                  </span>
-                )}
-              </div>
-              <h4 className="font-bold text-white mb-1 truncate pr-4">{l.title || 'Untitled Link'}</h4>
-              <p className="text-xs text-white/30 mb-6 font-mono truncate">{l.short_code}</p>
-              
-              <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                <div className="flex items-center gap-4">
-                  <div className="text-[10px]">
-                    <p className="text-white font-bold">{l.clicks || 0}</p>
-                    <p className="text-white/20 uppercase tracking-widest">Clicks</p>
+        <div className="card !p-0 overflow-hidden border-white/5 bg-white/[0.02] backdrop-blur-xl">
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-sm text-left">
+              <thead>
+                <tr className="text-white/30 border-b border-white/5 uppercase text-[10px] font-black tracking-widest">
+                  <th className="px-6 py-5">Link Details</th>
+                  <th className="px-6 py-5 text-center">Short Code</th>
+                  <th className="px-6 py-5 text-center">Clicks</th>
+                  <th className="px-6 py-5 text-center">Status</th>
+                  <th className="px-6 py-5 text-right">Created</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {links.map((l) => (
+                  <tr key={l.id} className="group hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-white/5 rounded-lg text-white/40 group-hover:text-purple-light transition-colors">
+                          <Globe size={16} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-white truncate max-w-[200px]">{l.title || 'Untitled Link'}</p>
+                          <p className="text-[10px] text-white/30 truncate max-w-[250px]">{l.original_url}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="px-2 py-1 bg-white/5 rounded text-white/60 text-xs font-mono">
+                        {l.short_code}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex flex-col items-center">
+                        <span className="font-bold text-white">{l.clicks || 0}</span>
+                        <span className="text-[9px] text-white/20 uppercase tracking-widest font-black">Engagement</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {l.is_active ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green/10 text-green text-[10px] font-black uppercase">
+                          <CheckCircle2 size={10} /> Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red/10 text-red text-[10px] font-black uppercase">
+                          <AlertCircle size={10} /> Disabled
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-right text-white/40 font-medium">
+                      {l.created_at ? new Date(l.created_at).toLocaleDateString() : '-'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Links View */}
+          <div className="md:hidden divide-y divide-white/5">
+            {links.map((l) => (
+              <div key={l.id} className="p-5 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 bg-white/5 rounded-lg text-white/40 flex-shrink-0">
+                    <Globe size={16} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-white truncate text-sm">{l.title || 'Untitled'}</p>
+                    <p className="text-[10px] text-white/30 truncate font-mono">{l.short_code}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 text-[10px] text-white/20">
-                  <Calendar size={10} />
-                  {l.created_at ? new Date(l.created_at).toLocaleDateString() : '-'}
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <span className="text-xs font-bold text-white">{l.clicks || 0} clicks</span>
+                  <div className={`w-2 h-2 rounded-full ${l.is_active ? 'bg-green' : 'bg-red'}`} />
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
     </div>
