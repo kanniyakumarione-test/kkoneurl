@@ -23,11 +23,17 @@ const Auth = () => {
       if (isLogin) {
         await login(form.email, form.password);
         toast('Welcome back!', 'success');
+        navigate(pendingUrl ? '/links' : '/dashboard', { state: { pendingUrl } });
       } else {
-        await register(form.email, form.password, form.name);
-        toast('Account created!', 'success');
+        const signupData = await register(form.email, form.password, form.name);
+        if (signupData?.session) {
+          toast('Account created!', 'success');
+          navigate(pendingUrl ? '/links' : '/dashboard', { state: { pendingUrl } });
+        } else {
+          toast('Account created. Check your email to confirm your account before login.', 'success');
+          setIsLogin(true);
+        }
       }
-      navigate(pendingUrl ? '/links' : '/dashboard', { state: { pendingUrl } });
     } catch (err) {
       toast(err.response?.data?.message || 'Authentication failed', 'error');
     } finally {
