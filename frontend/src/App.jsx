@@ -11,10 +11,13 @@ import Analytics from './pages/Analytics';
 import QRCode from './pages/QRCode';
 import BioPage from './pages/BioPage';
 import Settings from './pages/Settings';
+import ApiDocs from './pages/ApiDocs';
 import PublicBio from './pages/PublicBio';
 import Auth from './pages/Auth';
 import PasswordGate from './pages/PasswordGate';
 import RedirectHandler from './pages/RedirectHandler';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 import CreateLinkModal from './components/CreateLinkModal';
 import BatchShortenerModal from './components/BatchShortenerModal';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -131,6 +134,9 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Auth />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/api-docs" element={<ApiDocs />} />
         
         <Route path="/dashboard" element={
           <PrivateRoute>
