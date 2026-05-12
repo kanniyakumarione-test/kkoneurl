@@ -1,5 +1,53 @@
 const firebaseAdmin = require('../config/firebase');
 const supabase = require('../config/supabase');
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'aigenerator2k@gmail.com').toLowerCase();
+
+const generateUsername = () => `user_${Math.random().toString(36).substring(2, 7)}`;
+
+const findOrCreateDbUser = async ({ email, name, avatar }) => {
+  const normalizedEmail = (email || '').toLowerCase().trim();
+  if (!normalizedEmail) throw new Error('Missing email in Firebase token');
+
+  const { data: existing, error: lookupError } = await supabase
+    .from('users')
+    .select('id, email, display_name, username, avatar, is_admin')
+    .eq('email', normalizedEmail)
+    .maybeSingle();
+
+  if (lookupError) throw lookupError;
+  if (existing?.id) return existing;
+
+  let createdUser = null;
+  let lastError = null;
+
+  // Retry username generation on rare uniqueness collisions.
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const username = generateUsername();
+    const { data, error } = await supabase
+      .from('users')
+      .insert([{
+        email: normalizedEmail,
+        display_name: name || normalizedEmail.split('@')[0] || 'User',
+        username,
+        username_customized: false,
+        avatar: avatar || null,
+        is_admin: normalizedEmail === ADMIN_EMAIL
+      }])
+      .select('id, email, display_name, username, avatar, is_admin')
+      .single();
+
+    if (!error && data?.id) {
+      createdUser = data;
+      break;
+    }
+
+    lastError = error;
+    if (!error?.message?.toLowerCase?.().includes('duplicate key')) break;
+  }
+
+  if (!createdUser) throw (lastError || new Error('Failed to create user'));
+  return createdUser;
+};
 
 exports.protect = async (req, res, next) => {
   try {
@@ -17,13 +65,21 @@ exports.protect = async (req, res, next) => {
       return res.status(401).json({ message: 'Unauthorized: Invalid token' });
     }
 
-    // Attach user info to request
-    // Map Firebase fields to what the app expects
-    req.user = {
-      id: decodedToken.uid,
+    const dbUser = await findOrCreateDbUser({
       email: decodedToken.email,
       name: decodedToken.name,
       avatar: decodedToken.picture
+    });
+
+    // Attach user info to request
+    // Always use Supabase UUID as req.user.id to match DB schema.
+    req.user = {
+      id: dbUser.id,
+      firebaseUid: decodedToken.uid,
+      email: dbUser.email || decodedToken.email,
+      name: dbUser.display_name || decodedToken.name,
+      avatar: dbUser.avatar || decodedToken.picture,
+      isAdmin: dbUser.is_admin === true
     };
 
     next();
