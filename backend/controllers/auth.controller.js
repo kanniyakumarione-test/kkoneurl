@@ -1,5 +1,6 @@
 const supabase = require('../config/supabase');
 const jwt = require('jsonwebtoken');
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'aigenerator2k@gmail.com').toLowerCase();
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'kkoneurl_secret_key', { expiresIn: '30d' });
@@ -8,7 +9,11 @@ const generateToken = (id) => {
 exports.register = async (req, res) => {
   try {
     const { email, password, displayName } = req.body;
-    const { data: user, error } = await supabase.from('users').insert([{ email, password, display_name: displayName }]).select().single();
+    const { data: user, error } = await supabase
+      .from('users')
+      .insert([{ email, password, display_name: displayName, is_admin: (email || '').toLowerCase() === ADMIN_EMAIL }])
+      .select()
+      .single();
     if (error) throw error;
 
     res.status(201).json({
@@ -50,7 +55,8 @@ exports.getProfile = async (req, res) => {
         email: req.user.email,
         display_name: req.user.email?.split('@')[0] || 'User',
         username: 'user_' + Math.random().toString(36).substring(2, 7),
-        username_customized: false
+        username_customized: false,
+        is_admin: (req.user.email || '').toLowerCase() === ADMIN_EMAIL
       }]).select().single();
       
       if (createError) throw createError;

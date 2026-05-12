@@ -11,6 +11,7 @@ import Analytics from './pages/Analytics';
 import QRCode from './pages/QRCode';
 import BioPage from './pages/BioPage';
 import Settings from './pages/Settings';
+import AdminPanel from './pages/AdminPanel';
 import ApiDocs from './pages/ApiDocs';
 import PublicBio from './pages/PublicBio';
 import Auth from './pages/Auth';
@@ -28,6 +29,14 @@ const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-bg-primary">Loading...</div>;
   return user ? children : <Navigate to="/login" />;
+};
+
+const AdminRoute = ({ children }) => {
+  const { user, loading, isAdmin, profile } = useAuth();
+  if (loading) return <div className="h-screen w-full flex items-center justify-center bg-bg-primary">Loading...</div>;
+  if (!user) return <Navigate to="/login" />;
+  if (!profile) return <div className="h-screen w-full flex items-center justify-center bg-bg-primary">Loading...</div>;
+  return isAdmin ? children : <Navigate to="/dashboard" replace />;
 };
 
 const AppLayout = ({ children, onShorten, links }) => {
@@ -190,6 +199,14 @@ function App() {
               <Settings />
             </AppLayout>
           </PrivateRoute>
+        } />
+
+        <Route path="/admin" element={
+          <AdminRoute>
+            <AppLayout onShorten={() => { setInitialUrl(''); setShowCreate(true); }} links={links}>
+              <AdminPanel links={links} />
+            </AppLayout>
+          </AdminRoute>
         } />
 
         <Route path="/p/:code" element={<PasswordGate />} />

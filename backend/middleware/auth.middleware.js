@@ -22,3 +22,23 @@ exports.protect = async (req, res, next) => {
     res.status(401).json({ message: 'Unauthorized: Session expired' });
   }
 };
+
+exports.requireAdmin = async (req, res, next) => {
+  try {
+    if (!req.user?.email) return res.status(403).json({ message: 'Forbidden: Admin access required' });
+
+    const { data: dbUser, error } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', req.user.id)
+      .single();
+
+    if (error || !dbUser?.is_admin) {
+      return res.status(403).json({ message: 'Forbidden: Admin access required' });
+    }
+
+    next();
+  } catch (err) {
+    res.status(403).json({ message: 'Forbidden: Admin access required' });
+  }
+};

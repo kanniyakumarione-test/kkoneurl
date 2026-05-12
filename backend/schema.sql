@@ -11,6 +11,7 @@ CREATE TABLE users (
   bio_links JSONB DEFAULT '[]'::jsonb,
   username_last_changed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   username_customized BOOLEAN DEFAULT false,
+  is_admin BOOLEAN DEFAULT false,
   settings JSONB DEFAULT '{"emailNotifs": true, "publicProfile": true}'::jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );

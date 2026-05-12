@@ -17,7 +17,8 @@ export const AuthProvider = ({ children }) => {
         username: data.username,
         avatar: data.avatar,
         bio: data.bio,
-        settings: data.settings
+        settings: data.settings,
+        isAdmin: data.is_admin === true
       });
     } catch (err) {
       console.error('AuthContext: Failed to load profile', err);
@@ -65,9 +66,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const refreshProfile = () => loadProfile();
+  const isAdmin = profile?.isAdmin === true;
 
   return (
-    <AuthContext.Provider value={{ user, profile, login, register, logout, loading, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, login, register, logout, loading, refreshProfile, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

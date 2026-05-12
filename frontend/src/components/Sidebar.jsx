@@ -1,7 +1,7 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Link2, BarChart3, QrCode,
-  Users, Settings, Zap, ChevronRight, X, LogOut
+  Users, Settings, Zap, ChevronRight, X, LogOut, Shield
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -14,10 +14,13 @@ const navItems = [
   { path: '/settings', icon: <Settings size={18} />, label: 'Settings' },
 ];
 
+const adminNavItem = { path: '/admin', icon: <Shield size={18} />, label: 'Admin Panel' };
+
 const Sidebar = ({ open, onClose, links = [] }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, profile, logout } = useAuth();
+  const { user, profile, logout, isAdmin } = useAuth();
+  const visibleNavItems = isAdmin ? [...navItems, adminNavItem] : navItems;
 
   const linkCount = links.length;
   const linkLimit = 100;
@@ -69,7 +72,7 @@ const Sidebar = ({ open, onClose, links = [] }) => {
 
         {/* Nav Links */}
         <nav className="flex-1 px-4 space-y-1">
-          {navItems.map(item => (
+          {visibleNavItems.map(item => (
             <NavLink
               key={item.path}
               to={item.path}

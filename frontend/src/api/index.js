@@ -42,4 +42,9 @@ export const markAllNotificationsRead = () => API.patch('/notifications/read-all
 
 export const fetchGlobalStats = () => API.get('/public-stats');
 
+// Admin
+export const fetchAdminStats = () => API.get('/admin/stats');
+export const fetchAdminUsers = () => API.get('/admin/users');
+export const fetchAdminLinks = () => API.get('/admin/links');
+
 export default API;
