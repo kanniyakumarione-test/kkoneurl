@@ -257,6 +257,11 @@ const BioPage = ({ bioPage, setBioPage }) => {
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Username</label>
                       <input className="input" value={bioPage.username} disabled={!canChangeUsername} onChange={e => setBioPage({...bioPage, username: e.target.value.toLowerCase().replace(/\s+/g, '_')})} />
+                      {!canChangeUsername && (
+                        <p className="text-xs text-amber-300/90">
+                          Username locked. Try again in {daysRemaining} day{daysRemaining === 1 ? '' : 's'}.
+                        </p>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Display Name</label>
