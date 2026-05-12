@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { auth, googleProvider } from '../lib/firebase';
-import { signInWithRedirect, signOut, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
+import { signInWithPopup, signInWithRedirect, signOut, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 import * as api from '../api';
 
 const AuthContext = createContext();
@@ -27,15 +27,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Check for redirect result (catch errors from the sign-in flow)
+    // Check for redirect result and restore state if available
     getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
+      .then(async (result) => {
+        if (result?.user) {
+          setUser(result.user);
+          const token = await result.user.getIdToken();
+          localStorage.setItem('token', token);
+          await loadProfile();
           console.log('Redirect Sign-In Successful:', result.user.email);
         }
       })
       .catch((error) => {
         console.error('Redirect Sign-In Error:', error.code, error.message);
+      })
+      .finally(() => {
+        setLoading(false);
       });
 
     // Listen for changes on auth state
@@ -58,8 +65,13 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     try {
-      await signInWithRedirect(auth, googleProvider);
+      await signInWithPopup(auth, googleProvider);
     } catch (error) {
+      // Fallback for browsers/environments where popups are blocked
+      if (error?.code === 'auth/popup-blocked' || error?.code === 'auth/cancelled-popup-request') {
+        await signInWithRedirect(auth, googleProvider);
+        return;
+      }
       console.error('Google Sign-In Initiation Error:', error);
       throw error;
     }
