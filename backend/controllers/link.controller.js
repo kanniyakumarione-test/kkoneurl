@@ -80,6 +80,27 @@ exports.redirectUrl = async (req, res) => {
         const device_stats = link.device_stats || { mobile: 0, desktop: 0, tablet: 0 };
         const browser_stats = link.browser_stats || {};
         const daily_clicks = link.daily_clicks || [];
+        const geo_stats = link.geo_stats || {};
+        const recent_ips = link.recent_ips || [];
+
+        // 🛡️ Unique Click Detection
+        const isUnique = !recent_ips.includes(ip);
+        if (isUnique) {
+          recent_ips.push(ip);
+          if (recent_ips.length > 100) recent_ips.shift();
+        }
+
+        // 🌍 Geo Location (Async fetch)
+        try {
+          const axios = require('axios');
+          const geoRes = await axios.get(`https://ipapi.co/${ip}/json/`).catch(() => null);
+          if (geoRes && geoRes.data && geoRes.data.country_name) {
+            const country = geoRes.data.country_name;
+            geo_stats[country] = (geo_stats[country] || 0) + 1;
+          }
+        } catch (gErr) {
+          console.error('Geo Error:', gErr.message);
+        }
 
         // Increment device
         if (device.includes('iphone') || device.includes('mobile')) device_stats.mobile = (device_stats.mobile || 0) + 1;
@@ -96,6 +117,8 @@ exports.redirectUrl = async (req, res) => {
 
         // Milestone Notification Check
         const totalClicks = (link.clicks || 0) + 1;
+        const totalUnique = (link.unique_clicks || 0) + (isUnique ? 1 : 0);
+        
         const milestones = [10, 50, 100, 500, 1000, 5000];
         if (milestones.includes(totalClicks)) {
           await supabase.from('notifications').insert([{
@@ -108,8 +131,11 @@ exports.redirectUrl = async (req, res) => {
 
         await supabase.from('links').update({
           clicks: totalClicks,
+          unique_clicks: totalUnique,
           device_stats,
           browser_stats,
+          geo_stats,
+          recent_ips,
           daily_clicks: daily_clicks.slice(-30) // Keep last 30 days
         }).eq('id', link.id);
       } catch (err) {

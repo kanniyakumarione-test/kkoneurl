@@ -118,7 +118,7 @@ const Analytics = ({ links }) => {
             <h3 className="font-bold">Top Countries</h3>
           </div>
           <div className="space-y-4">
-            {geoData.map((g, i) => (
+            {geoData.length > 0 ? geoData.map((g, i) => (
               <div key={g.country}>
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-white/60">{g.country}</span>
@@ -128,13 +128,15 @@ const Analytics = ({ links }) => {
                   <div 
                     className="h-full rounded-full transition-all duration-1000" 
                     style={{ 
-                      width: `${Math.round((g.clicks / geoData[0].clicks) * 100)}%`,
+                      width: geoData[0] ? `${Math.round((g.clicks / geoData[0].clicks) * 100)}%` : '0%',
                       backgroundColor: COLORS[i % COLORS.length]
                     }} 
                   />
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="py-10 text-center text-white/20 text-xs font-black uppercase tracking-widest">No geographic data yet</div>
+            )}
           </div>
         </div>
       </div>

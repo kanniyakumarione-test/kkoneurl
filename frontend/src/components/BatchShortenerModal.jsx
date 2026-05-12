@@ -29,8 +29,8 @@ const BatchShortenerModal = ({ onClose, onAddBatch }) => {
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
       <div className="absolute inset-0 bg-bg-primary/80 backdrop-blur-md" onClick={onClose} />
       
-      <div className="relative w-full max-w-2xl bg-bg-card border border-white/10 rounded-[32px] shadow-2xl overflow-hidden animate-fade-in">
-        <div className="p-8">
+      <div className="relative w-full max-w-2xl bg-bg-card border border-white/10 rounded-[32px] shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
+        <div className="p-8 overflow-y-auto no-scrollbar">
           <div className="flex justify-between items-start mb-8">
             <div className="flex gap-4">
               <div className="w-12 h-12 bg-gradient-to-br from-cyan to-blue rounded-2xl flex items-center justify-center shadow-lg shadow-cyan/20">
