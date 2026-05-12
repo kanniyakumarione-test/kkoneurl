@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { auth, googleProvider } from '../lib/firebase';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInWithRedirect, signOut, onAuthStateChanged } from 'firebase/auth';
 import * as api from '../api';
 
 const AuthContext = createContext();
@@ -47,8 +47,8 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      return result.user;
+      // Switched to redirect to avoid popup/iframe security issues
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
       console.error('Google Sign-In Error:', error);
       throw error;
