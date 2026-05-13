@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, ExternalLink, Eye, Save, AlertCircle, Play, Zap, Share2 } from 'lucide-react';
+import { Plus, Trash2, ExternalLink, Eye, Save, AlertCircle, Play, Zap, Share2, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import * as api from '../api';
 
 const THEMES = [
-  { id: 'dark-purple', label: 'Dark Purple', bg: 'linear-gradient(135deg,#0e0a1f,#1a1040)', accent: '#6c63ff' },
-  { id: 'dark-cyan', label: 'Dark Cyan', bg: 'linear-gradient(135deg,#071828,#0a1f2e)', accent: '#00d4ff' },
-  { id: 'midnight', label: 'Midnight', bg: 'linear-gradient(135deg,#07070f,#12121a)', accent: '#9b94ff' },
-  { id: 'glass-purple', label: 'Glass Purple', bg: 'linear-gradient(135deg,#6c63ff,#9b94ff)', accent: '#fff', glass: true },
-  { id: 'glass-cyan', label: 'Glass Cyan', bg: 'linear-gradient(135deg,#00d4ff,#00e5ff)', accent: '#fff', glass: true },
-  { id: 'neo-dark', label: 'Neo Dark', bg: '#121212', accent: '#43e97b', neo: true },
+  { id: 'dark-purple', label: 'Dark Purple', bg: 'linear-gradient(135deg,#0e0a1f,#1a1040)', accent: '#6c63ff', pro: false },
+  { id: 'dark-cyan', label: 'Dark Cyan', bg: 'linear-gradient(135deg,#071828,#0a1f2e)', accent: '#00d4ff', pro: false },
+  { id: 'midnight', label: 'Midnight', bg: 'linear-gradient(135deg,#07070f,#12121a)', accent: '#9b94ff', pro: false },
+  { id: 'glass-purple', label: 'Glass Purple', bg: 'linear-gradient(135deg,#6c63ff,#9b94ff)', accent: '#fff', glass: true, pro: true },
+  { id: 'glass-cyan', label: 'Glass Cyan', bg: 'linear-gradient(135deg,#00d4ff,#00e5ff)', accent: '#fff', glass: true, pro: true },
+  { id: 'neo-dark', label: 'Neo Dark', bg: '#121212', accent: '#43e97b', neo: true, pro: true },
+  { id: 'custom', label: 'Custom Design', pro: true, isCustom: true }
 ];
 
 const SOCIAL_PLATFORMS = [
@@ -23,11 +26,14 @@ const SOCIAL_PLATFORMS = [
 
 const BioPreview = ({ bioPage, theme, className = "" }) => {
   const t = THEMES.find(t => t.id === theme) || THEMES[0];
+  const bg = theme === 'custom' ? bioPage.customBg : t.bg;
+  const accent = theme === 'custom' ? bioPage.customAccent : t.accent;
+  
   return (
     <div className={`w-[280px] h-[560px] bg-[#111] rounded-[40px] border-[8px] border-[#222] overflow-hidden shadow-2xl relative flex-shrink-0 ${className}`}>
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-[#222] rounded-b-2xl z-10" />
-      <div className="h-full p-8 flex flex-col items-center gap-2 overflow-y-auto custom-scrollbar" style={{ background: t.bg }}>
-        <div className="w-16 h-16 rounded-full border-2 mt-8 mb-2 flex items-center justify-center bg-white/5 overflow-hidden flex-shrink-0" style={{ borderColor: t.accent }}>
+      <div className="h-full p-8 flex flex-col items-center gap-2 overflow-y-auto custom-scrollbar" style={{ background: bg }}>
+        <div className="w-16 h-16 rounded-full border-2 mt-8 mb-2 flex items-center justify-center bg-white/5 overflow-hidden flex-shrink-0" style={{ borderColor: accent }}>
           {bioPage.avatar ? <img src={bioPage.avatar} className="w-full h-full object-cover" alt="Avatar" /> : <span className="text-2xl">👤</span>}
         </div>
         <p className="text-sm font-bold text-white text-center truncate w-full">{bioPage.displayName || 'Your Name'}</p>
@@ -62,16 +68,18 @@ const BioPreview = ({ bioPage, theme, className = "" }) => {
           </div>
         ))}
 
-        <p className="mt-auto pt-4 text-[9px] font-black uppercase tracking-[0.2em] opacity-40" style={{ color: t.accent }}>Powered by kkoneurl</p>
+        <p className="mt-auto pt-4 text-[9px] font-black uppercase tracking-[0.2em] opacity-40" style={{ color: accent }}>Powered by kkoneurl</p>
       </div>
     </div>
   );
 };
 
 const BioPage = ({ bioPage, setBioPage }) => {
+  const navigate = useNavigate();
   const toast = useToast();
-  const { refreshProfile } = useAuth();
+  const { refreshProfile, profile } = useAuth();
   const [activeTab, setActiveTab] = useState('links');
+
   const [newLink, setNewLink] = useState({ label: '', url: '', icon: '🔗', color: '#6c63ff' });
   const [saving, setSaving] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -91,7 +99,9 @@ const BioPage = ({ bioPage, setBioPage }) => {
           displayName: data.display_name || '',
           bio: data.bio || '',
           avatar: data.avatar || '',
-          theme: data.theme || 'dark-purple',
+           theme: data.theme || 'dark-purple',
+          customBg: data.custom_bg || 'linear-gradient(135deg, #1a1a2e, #16213e)',
+          customAccent: data.custom_accent || '#6c63ff',
           links: data.bio_links || [],
           socialLinks: data.social_links || {},
           embeds: data.embeds || [],
@@ -128,6 +138,8 @@ const BioPage = ({ bioPage, setBioPage }) => {
         bio: bioPage.bio,
         avatar: bioPage.avatar,
         theme: bioPage.theme,
+        custom_bg: bioPage.customBg,
+        custom_accent: bioPage.customAccent,
         bio_links: bioPage.links,
         social_links: bioPage.socialLinks,
         embeds: bioPage.embeds,
@@ -212,45 +224,63 @@ const BioPage = ({ bioPage, setBioPage }) => {
 
               {activeTab === 'embeds' && (
                 <div className="space-y-6">
-                  {bioPage.embeds?.map((embed, i) => (
-                    <div key={i} className="flex items-center gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl">
-                      <div className="w-10 h-10 rounded-xl bg-purple/10 flex items-center justify-center text-purple-light">{embed.type === 'youtube' ? <Play size={20} /> : <Zap size={20} />}</div>
-                      <div className="flex-1 min-w-0"><p className="font-bold text-sm uppercase tracking-widest">{embed.type}</p><p className="text-[10px] text-white/30 truncate font-mono">ID: {embed.id}</p></div>
-                      <button className="p-2 text-white/20 hover:text-pink transition-colors" onClick={() => setBioPage(prev => ({ ...prev, embeds: prev.embeds.filter((_, idx) => idx !== i) }))}><Trash2 size={16} /></button>
-                    </div>
-                  ))}
-                  {showAddEmbed ? (
-                    <div className="p-6 bg-purple/10 border border-purple/20 rounded-3xl space-y-4 animate-fade-in">
-                      <div className="flex gap-2 p-1 bg-black/20 rounded-xl">
-                        {['youtube', 'spotify'].map(t => (
-                          <button key={t} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${newEmbed.type === t ? 'bg-purple text-white shadow-lg' : 'text-white/40 hover:text-white'}`} onClick={() => setNewEmbed({...newEmbed, type: t})}>{t}</button>
-                        ))}
+                  {profile?.plan !== 'pro' && !profile?.is_admin ? (
+                    <div className="p-12 border border-dashed border-white/10 rounded-[2rem] bg-white/[0.01] flex flex-col items-center text-center space-y-4">
+                      <div className="w-12 h-12 rounded-2xl bg-purple/10 flex items-center justify-center text-purple-light"><Play size={24} /></div>
+                      <div>
+                        <h4 className="font-bold mb-1">Rich Media is a Pro Feature</h4>
+                        <p className="text-xs text-white/30 max-w-xs mx-auto">Embed YouTube videos and Spotify tracks directly onto your bio page to engage your audience.</p>
                       </div>
-                      <input 
-                        className="input !bg-black/20" 
-                        placeholder={newEmbed.type === 'youtube' ? "Paste YouTube Video URL..." : "Paste Spotify Track URL..."}
-                        value={newEmbed.url}
-                        onChange={e => setNewEmbed({...newEmbed, url: e.target.value})}
-                        autoFocus
-                      />
-                      <div className="flex gap-2">
-                        <button className="btn btn-secondary flex-1 !py-3" onClick={() => { setShowAddEmbed(false); setNewEmbed({ type: 'youtube', url: '' }); }}>Cancel</button>
-                        <button className="btn btn-primary flex-1 !py-3 font-black text-[10px] uppercase" onClick={() => {
-                          const { type, url } = newEmbed;
-                          if (!url) return;
-                          let id = type === 'youtube' ? url.split('v=')[1]?.split('&')[0] || url.split('/').pop() : url.split('/track/')[1]?.split('?')[0];
-                          if (id) {
-                            setBioPage(prev => ({ ...prev, embeds: [...(prev.embeds || []), { type, id }] }));
-                            setShowAddEmbed(false);
-                            setNewEmbed({ type: 'youtube', url: '' });
-                          }
-                        }}>Add Embed</button>
-                      </div>
+                      <button 
+                        onClick={() => navigate('/settings')}
+                        className="btn btn-primary !py-2.5 !px-6 text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+                      >
+                        Upgrade to Pro <Sparkles size={12} />
+                      </button>
                     </div>
                   ) : (
-                    <button className="btn btn-secondary w-full !py-5 rounded-2xl border-dashed border-white/10 hover:border-purple/40 group" onClick={() => setShowAddEmbed(true)}>
-                      <Plus size={14} className="group-hover:scale-125 transition-transform" /> Add Rich Media Content
-                    </button>
+                    <>
+                      {bioPage.embeds?.map((embed, i) => (
+                        <div key={i} className="flex items-center gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl">
+                          <div className="w-10 h-10 rounded-xl bg-purple/10 flex items-center justify-center text-purple-light">{embed.type === 'youtube' ? <Play size={20} /> : <Zap size={20} />}</div>
+                          <div className="flex-1 min-w-0"><p className="font-bold text-sm uppercase tracking-widest">{embed.type}</p><p className="text-[10px] text-white/30 truncate font-mono">ID: {embed.id}</p></div>
+                          <button className="p-2 text-white/20 hover:text-pink transition-colors" onClick={() => setBioPage(prev => ({ ...prev, embeds: prev.embeds.filter((_, idx) => idx !== i) }))}><Trash2 size={16} /></button>
+                        </div>
+                      ))}
+                      {showAddEmbed ? (
+                        <div className="p-6 bg-purple/10 border border-purple/20 rounded-3xl space-y-4 animate-fade-in">
+                          <div className="flex gap-2 p-1 bg-black/20 rounded-xl">
+                            {['youtube', 'spotify'].map(t => (
+                              <button key={t} className={`flex-1 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${newEmbed.type === t ? 'bg-purple text-white shadow-lg' : 'text-white/40 hover:text-white'}`} onClick={() => setNewEmbed({...newEmbed, type: t})}>{t}</button>
+                            ))}
+                          </div>
+                          <input 
+                            className="input !bg-black/20" 
+                            placeholder={newEmbed.type === 'youtube' ? "Paste YouTube Video URL..." : "Paste Spotify Track URL..."}
+                            value={newEmbed.url}
+                            onChange={e => setNewEmbed({...newEmbed, url: e.target.value})}
+                            autoFocus
+                          />
+                          <div className="flex gap-2">
+                            <button className="btn btn-secondary flex-1 !py-3" onClick={() => { setShowAddEmbed(false); setNewEmbed({ type: 'youtube', url: '' }); }}>Cancel</button>
+                            <button className="btn btn-primary flex-1 !py-3 font-black text-[10px] uppercase" onClick={() => {
+                              const { type, url } = newEmbed;
+                              if (!url) return;
+                              let id = type === 'youtube' ? url.split('v=')[1]?.split('&')[0] || url.split('/').pop() : url.split('/track/')[1]?.split('?')[0];
+                              if (id) {
+                                setBioPage(prev => ({ ...prev, embeds: [...(prev.embeds || []), { type, id }] }));
+                                setShowAddEmbed(false);
+                                setNewEmbed({ type: 'youtube', url: '' });
+                              }
+                            }}>Add Embed</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button className="btn btn-secondary w-full !py-5 rounded-2xl border-dashed border-white/10 hover:border-purple/40 group" onClick={() => setShowAddEmbed(true)}>
+                          <Plus size={14} className="group-hover:scale-125 transition-transform" /> Add Rich Media Content
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
               )}
@@ -279,14 +309,74 @@ const BioPage = ({ bioPage, setBioPage }) => {
                 </div>
               )}
 
-              {activeTab === 'theme' && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {THEMES.map(t => (
-                    <button key={t.id} className={`p-4 rounded-2xl border transition-all text-left space-y-3 ${bioPage.theme === t.id ? 'border-purple-light bg-purple/10' : 'border-white/5 bg-white/5 hover:border-white/20'}`} onClick={() => setBioPage({...bioPage, theme: t.id})}>
-                      <div className="h-16 w-full rounded-lg shadow-inner" style={{ background: t.bg }} />
-                      <p className="text-[10px] font-black uppercase tracking-widest text-center">{t.label}</p>
-                    </button>
-                  ))}
+               {activeTab === 'theme' && (
+                <div className="space-y-8">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {THEMES.map(t => (
+                      <button 
+                        key={t.id} 
+                        className={`p-4 rounded-2xl border transition-all text-left space-y-3 relative overflow-hidden ${bioPage.theme === t.id ? 'border-purple-light bg-purple/10' : 'border-white/5 bg-white/5 hover:border-white/20'} ${t.pro && profile?.plan !== 'pro' && !profile?.is_admin ? 'opacity-70 grayscale' : ''}`} 
+                        onClick={() => {
+                          if (t.pro && profile?.plan !== 'pro' && !profile?.is_admin) {
+                            toast('This is a Pro theme! Upgrade to unlock.', 'info');
+                            return;
+                          }
+                          setBioPage({...bioPage, theme: t.id})
+                        }}
+                      >
+                        {t.pro && profile?.plan !== 'pro' && !profile?.is_admin && (
+                          <div className="absolute top-2 right-2 bg-purple/80 text-white p-1 rounded-lg">
+                            <Sparkles size={10} />
+                          </div>
+                        )}
+                        <div className="h-16 w-full rounded-lg shadow-inner flex items-center justify-center text-white/20" style={{ background: t.isCustom ? bioPage.customBg : t.bg }}>
+                          {t.isCustom && <Zap size={24} />}
+                        </div>
+                        <p className="text-[10px] font-black uppercase tracking-widest text-center">{t.label}</p>
+                      </button>
+                    ))}
+                  </div>
+
+                  {bioPage.theme === 'custom' && (
+                    <div className="p-8 bg-white/5 border border-white/5 rounded-3xl space-y-8 animate-fade-in">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center gap-2"><Sparkles size={12} /> Background Design</label>
+                          <div className="space-y-3">
+                            <input 
+                              className="input font-mono text-xs" 
+                              value={bioPage.customBg} 
+                              onChange={e => setBioPage({...bioPage, customBg: e.target.value})} 
+                              placeholder="hex, rgb, or linear-gradient..."
+                            />
+                            <div className="flex gap-2 flex-wrap">
+                              {['#000000', 'linear-gradient(135deg, #1a1a2e, #16213e)', 'linear-gradient(45deg, #0f0c29, #302b63, #24243e)'].map(p => (
+                                <button key={p} className="w-8 h-8 rounded-lg border border-white/10" style={{ background: p }} onClick={() => setBioPage({...bioPage, customBg: p})} />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center gap-2"><Plus size={12} /> Accent Color</label>
+                          <div className="flex items-center gap-4">
+                            <input 
+                              type="color" 
+                              className="w-12 h-12 rounded-xl bg-transparent border-0 cursor-pointer" 
+                              value={bioPage.customAccent} 
+                              onChange={e => setBioPage({...bioPage, customAccent: e.target.value})} 
+                            />
+                            <input 
+                              className="input font-mono text-xs uppercase" 
+                              value={bioPage.customAccent} 
+                              onChange={e => setBioPage({...bioPage, customAccent: e.target.value})} 
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-white/20 italic text-center">Pro Tip: You can paste full CSS gradients in the background field! ✨</p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

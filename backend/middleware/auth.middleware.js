@@ -10,7 +10,7 @@ const findOrCreateDbUser = async ({ email, name, avatar }) => {
 
   const { data: existing, error: lookupError } = await supabase
     .from('users')
-    .select('id, email, display_name, username, avatar, is_admin')
+    .select('id, email, display_name, username, avatar, is_admin, plan')
     .eq('email', normalizedEmail)
     .maybeSingle();
 
@@ -33,7 +33,7 @@ const findOrCreateDbUser = async ({ email, name, avatar }) => {
         avatar: avatar || null,
         is_admin: normalizedEmail === ADMIN_EMAIL
       }])
-      .select('id, email, display_name, username, avatar, is_admin')
+      .select('id, email, display_name, username, avatar, is_admin, plan')
       .single();
 
     if (!error && data?.id) {
@@ -79,7 +79,8 @@ exports.protect = async (req, res, next) => {
       email: dbUser.email || decodedToken.email,
       name: dbUser.display_name || decodedToken.name,
       avatar: dbUser.avatar || decodedToken.picture,
-      isAdmin: dbUser.is_admin === true
+      isAdmin: dbUser.is_admin === true,
+      plan: dbUser.plan || 'free'
     };
 
     next();

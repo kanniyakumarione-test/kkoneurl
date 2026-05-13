@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, Eye, EyeOff, Zap, Copy, BarChart3 } from 'lucide-react';
+import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, Eye, EyeOff, Zap, Copy, BarChart3, CreditCard, Sparkles, ArrowUpRight } from 'lucide-react';
+
+
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
+import { PayPalButtons } from '@paypal/react-paypal-js';
 import * as api from '../api';
+
 
 const SettingsSection = ({ title, icon, children }) => (
   <div className="space-y-4">
@@ -42,8 +46,12 @@ const Settings = () => {
     name: '',
     email: '',
     public: true,
-    notifs: true
+    notifs: true,
+    plan: 'free',
+    proUntil: null,
+    userId: ''
   });
+
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -54,8 +62,12 @@ const Settings = () => {
           email: data.email || '',
           public: data.settings?.publicProfile ?? true,
           notifs: data.settings?.emailNotifs ?? true,
-          apiKey: data.api_key || ''
+          apiKey: data.api_key || '',
+          plan: data.plan || 'free',
+          proUntil: data.pro_until || null,
+          userId: data.id || ''
         });
+
 
         // 🛡️ Check Password Lock
         const lastChanged = new Date(data.password_last_changed || 0);
@@ -163,92 +175,157 @@ const Settings = () => {
         </SettingsRow>
       </SettingsSection>
 
-      <SettingsSection title="Developer API" icon={<Zap size={14} />}>
-        <SettingsRow label="API Key" desc="Use this key to shorten links programmatically">
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <input 
-                type={showApiKey ? "text" : "password"} 
-                className="input sm:w-64 font-mono text-[10px] pr-20" 
-                value={form.apiKey || ''} 
-                readOnly 
-                placeholder="Click ⚡ to generate"
-              />
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                {form.apiKey && (
-                  <button 
-                    onClick={() => {
-                      navigator.clipboard.writeText(form.apiKey);
-                      toast('API Key copied!', 'success');
-                    }}
-                    className="p-1.5 text-white/20 hover:text-white transition-colors"
-                    title="Copy Key"
-                  >
-                    <Copy size={12} />
-                  </button>
-                )}
-                <button 
-                  onClick={() => setShowApiKey(!showApiKey)}
-                  className="p-1.5 text-white/20 hover:text-white transition-colors"
-                >
-                  {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
-                </button>
+      <div id="subscription-section">
+        <SettingsSection title="Subscription" icon={<CreditCard size={14} />}>
+
+        <SettingsRow 
+          label="Current Plan" 
+          desc={form.plan === 'pro' ? `Premium access active until ${new Date(form.proUntil).toLocaleDateString()}` : "Upgrade to unlock custom domains, advanced analytics, and more."}
+        >
+          <div className="flex items-center gap-3">
+            <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${form.plan === 'pro' ? 'bg-purple/20 text-purple-light border border-purple/30' : 'bg-white/5 text-white/40 border border-white/5'}`}>
+              {form.plan} Plan
+            </span>
+            {form.plan !== 'pro' && (
+              <div className="w-full sm:w-64">
+                <PayPalButtons
+                  style={{ 
+                    label: 'subscribe',
+                    layout: 'vertical',
+                    color: 'blue',
+                    shape: 'pill',
+                    height: 40
+                  }}
+                  createSubscription={(data, actions) => {
+                    return actions.subscription.create({
+                      plan_id: 'P-6XB22278MB2849041NICLVSA', // Live Plan ID
+                      custom_id: form.userId // Links the payment to the user
+                    });
+                  }}
+                  onApprove={(data, actions) => {
+                    toast('Payment successful! Processing...', 'success');
+                    refreshProfile();
+                  }}
+                  onError={(err) => {
+                    toast('PayPal Checkout failed', 'error');
+                    console.error(err);
+                  }}
+                />
               </div>
-            </div>
-            <button 
-              className="p-2.5 rounded-xl bg-purple/10 border border-purple/20 text-purple-light hover:bg-purple/20 transition-all"
-              onClick={async () => {
-                try {
-                  const { data } = await api.generateApiKey();
-                  setForm(prev => ({...prev, apiKey: data.apiKey}));
-                  toast('New API Key generated! 🔑', 'success');
-                  setShowApiKey(true);
-                } catch (err) {
-                  toast('Failed to generate key', 'error');
-                }
-              }}
-              title="Generate New Key"
-            >
-              <Zap size={16} />
-            </button>
+            )}
+
           </div>
         </SettingsRow>
-        
-        {form.apiKey && (
-          <div className="mt-6 p-6 bg-black/20 border border-white/5 rounded-[2rem] space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BarChart3 size={16} className="text-purple-light" />
-                <p className="text-xs font-black uppercase tracking-[0.2em]">Quick Start Guide</p>
-              </div>
-              <span className="badge bg-purple/10 text-purple text-[9px]">API v1.0</span>
-            </div>
-            
-            <p className="text-xs text-white/40 leading-relaxed">
-              Use your API key to shorten links programmatically. Send a POST request to the endpoint below with your key in the <code className="text-purple-light font-mono">x-api-key</code> header.
-            </p>
+      </SettingsSection>
+    </div>
 
-            <div className="relative group">
-              <pre className="bg-bg-primary p-5 rounded-2xl text-[11px] font-mono text-white/80 overflow-x-auto border border-white/5 shadow-inner leading-relaxed">
-                {`curl -X POST https://kkoneurl.kanniyakumarione.com/api/v1/shorten \\
-  -H "x-api-key: ${form.apiKey}" \\
-  -H "Content-Type: application/json" \\
-  -d '{"url": "https://example.com"}'`}
-              </pre>
-              <button 
-                onClick={() => {
-                  navigator.clipboard.writeText(`curl -X POST https://kkoneurl.kanniyakumarione.com/api/v1/shorten -H "x-api-key: ${form.apiKey}" -H "Content-Type: application/json" -d '{"url": "https://example.com"}'`);
-                  toast('Usage snippet copied! 🚀', 'success');
-                }}
-                className="absolute top-4 right-4 p-2 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-white/10 text-white/40 hover:text-white"
-                title="Copy Snippet"
-              >
-                <Copy size={14} />
-              </button>
+
+
+      <SettingsSection title="Developer API" icon={<Zap size={14} />}>
+        {form.plan === 'pro' || profile?.is_admin ? (
+          <>
+            <SettingsRow label="API Key" desc="Use this key to shorten links programmatically">
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <input 
+                    type={showApiKey ? "text" : "password"} 
+                    className="input sm:w-64 font-mono text-[10px] pr-20" 
+                    value={form.apiKey || ''} 
+                    readOnly 
+                    placeholder="Click ⚡ to generate"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    {form.apiKey && (
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(form.apiKey);
+                          toast('API Key copied!', 'success');
+                        }}
+                        className="p-1.5 text-white/20 hover:text-white transition-colors"
+                        title="Copy Key"
+                      >
+                        <Copy size={12} />
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => setShowApiKey(!showApiKey)}
+                      className="p-1.5 text-white/20 hover:text-white transition-colors"
+                    >
+                      {showApiKey ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
+                </div>
+                <button 
+                  className="p-2.5 rounded-xl bg-purple/10 border border-purple/20 text-purple-light hover:bg-purple/20 transition-all"
+                  onClick={async () => {
+                    try {
+                      const { data } = await api.generateApiKey();
+                      setForm(prev => ({...prev, apiKey: data.apiKey}));
+                      toast('New API Key generated! 🔑', 'success');
+                      setShowApiKey(true);
+                    } catch (err) {
+                      toast('Failed to generate key', 'error');
+                    }
+                  }}
+                  title="Generate New Key"
+                >
+                  <Zap size={16} />
+                </button>
+              </div>
+            </SettingsRow>
+            
+            {form.apiKey && (
+              <div className="mt-6 p-6 bg-black/20 border border-white/5 rounded-[2rem] space-y-4 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 size={16} className="text-purple-light" />
+                    <p className="text-xs font-black uppercase tracking-[0.2em]">Quick Start Guide</p>
+                  </div>
+                  <span className="badge bg-purple/10 text-purple text-[9px]">API v1.0</span>
+                </div>
+                
+                <p className="text-xs text-white/40 leading-relaxed">
+                  Use your API key to shorten links programmatically. Send a POST request to the endpoint below with your key in the <code className="text-purple-light font-mono">x-api-key</code> header.
+                </p>
+    
+                <div className="relative group">
+                  <pre className="bg-bg-primary p-5 rounded-2xl text-[11px] font-mono text-white/80 overflow-x-auto border border-white/5 shadow-inner leading-relaxed">
+                    {`curl -X POST https://kkoneurl.kanniyakumarione.com/api/v1/shorten \\
+      -H "x-api-key: ${form.apiKey}" \\
+      -H "Content-Type: application/json" \\
+      -d '{"url": "https://example.com"}'`}
+                  </pre>
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(`curl -X POST https://kkoneurl.kanniyakumarione.com/api/v1/shorten -H "x-api-key: ${form.apiKey}" -H "Content-Type: application/json" -d '{"url": "https://example.com"}'`);
+                      toast('Usage snippet copied! 🚀', 'success');
+                    }}
+                    className="absolute top-4 right-4 p-2 bg-white/5 rounded-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-white/10 text-white/40 hover:text-white"
+                    title="Copy Snippet"
+                  >
+                    <Copy size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="p-12 border border-dashed border-white/10 rounded-[2rem] bg-white/[0.01] flex flex-col items-center text-center space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-purple/10 flex items-center justify-center text-purple-light"><Zap size={24} /></div>
+            <div>
+              <h4 className="font-bold mb-1">Developer API is a Pro Feature</h4>
+              <p className="text-xs text-white/30 max-w-xs mx-auto">Automate your link shortening with our powerful API. Upgrade to Pro to generate your unique API key.</p>
             </div>
+            <button 
+              onClick={() => document.getElementById('subscription-section')?.scrollIntoView({ behavior: 'smooth' })}
+              className="text-[10px] font-black uppercase tracking-widest text-purple-light hover:text-white transition-all flex items-center gap-2"
+            >
+              Learn More <ArrowUpRight size={12} />
+            </button>
           </div>
         )}
       </SettingsSection>
+
 
       <SettingsSection title="Security" icon={<Shield size={14} />}>
         {!showPasswordFields ? (

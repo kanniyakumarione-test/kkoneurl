@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { X, Link2, Lock, Clock, Tag, Globe, Smartphone, Zap, Check, Eye, EyeOff } from 'lucide-react';
+import { X, Link2, Lock, Clock, Tag, Globe, Smartphone, Zap, Check, Eye, EyeOff, Sparkles } from 'lucide-react';
+
 import { useToast } from '../context/ToastContext';
+import { useAuth } from '../context/AuthContext';
 import { generateId, generateSlug } from '../store/linksStore';
 
+
 const CreateLinkModal = ({ onClose, onAdd, initialUrl }) => {
+  const { profile } = useAuth();
   const toast = useToast();
+
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [createdLink, setCreatedLink] = useState(null);
@@ -81,10 +86,29 @@ const CreateLinkModal = ({ onClose, onAdd, initialUrl }) => {
 
               <div className="grid sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40">Custom Slug</label>
-                  <div className="flex">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center justify-between">
+                    Custom Slug
+                    {profile?.plan !== 'pro' && !profile?.is_admin && (
+                      <span className="flex items-center gap-1 text-purple-light text-[8px] animate-pulse">
+                        <Sparkles size={8} /> PRO
+                      </span>
+                    )}
+                  </label>
+                  <div className="flex relative">
                     <span className="px-4 py-3 bg-white/5 border border-white/10 border-r-0 rounded-l-xl text-[10px] font-bold text-white/20">kkoneurl.kanniyakumarione.com/</span>
-                    <input className="input !rounded-l-none" placeholder="slug" value={form.customSlug} onChange={e => setForm({...form, customSlug: e.target.value})} />
+                    <input 
+                      className={`input !rounded-l-none ${profile?.plan !== 'pro' && !profile?.is_admin ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                      placeholder={profile?.plan !== 'pro' && !profile?.is_admin ? "Pro Only" : "slug"} 
+                      value={form.customSlug} 
+                      onChange={e => {
+                        if (profile?.plan !== 'pro' && !profile?.is_admin) {
+                          toast('Custom slugs require a Pro subscription.', 'info');
+                          return;
+                        }
+                        setForm({...form, customSlug: e.target.value});
+                      }} 
+                      readOnly={profile?.plan !== 'pro' && !profile?.is_admin}
+                    />
                   </div>
                 </div>
                 <div className="space-y-2">

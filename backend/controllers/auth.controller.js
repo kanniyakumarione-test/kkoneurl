@@ -219,11 +219,18 @@ exports.changePassword = async (req, res) => {
 
 exports.generateApiKey = async (req, res) => {
   try {
+    // 🛡️ Pro Only Check (Admin Bypass)
+    const { data: user } = await supabase.from('users').select('plan, is_admin').eq('id', req.user.id).single();
+    if (user?.plan !== 'pro' && !user?.is_admin) {
+      return res.status(403).json({ message: 'API access requires a Pro subscription.' });
+    }
+
     const apiKey = 'kk_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const { error } = await supabase.from('users').update({ api_key: apiKey }).eq('id', req.user.id);
     if (error) throw error;
     res.json({ apiKey });
   } catch (err) {
+
     res.status(500).json({ message: err.message });
   }
 };

@@ -4,17 +4,26 @@ exports.shortenUrl = async (req, res) => {
   try {
     const { originalUrl, customSlug, title, password, expiresAt, tags, device_routing, geo_redirects } = req.body;
     
-    // 🛡️ Global Limit Check (100 links max per user)
-    const { count, error: countError } = await supabase
-      .from('links')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', req.user.id);
-
-    if (countError) throw countError;
-    if (count >= 100) {
+    // 🛡️ Pro Only: Custom Slugs (Admin Bypass)
+    if (customSlug && req.user.plan !== 'pro' && !req.user.isAdmin) {
       return res.status(403).json({ 
-        message: 'Link limit reached (100/100). Please delete old links to create more.' 
+        message: 'Custom slugs are a Pro feature. Upgrade to choose your own link names!' 
       });
+    }
+    
+    // 🛡️ Plan-based Limit Check (Admin Bypass)
+    if (req.user.plan !== 'pro' && !req.user.isAdmin) {
+      const { count, error: countError } = await supabase
+        .from('links')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', req.user.id);
+
+      if (countError) throw countError;
+      if (count >= 100) {
+        return res.status(403).json({ 
+          message: 'Link limit reached (100/100). Upgrade to Pro for unlimited links!' 
+        });
+      }
     }
 
     const shortCode = customSlug || Math.random().toString(36).substring(2, 8);

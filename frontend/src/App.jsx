@@ -21,6 +21,8 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import CreateLinkModal from './components/CreateLinkModal';
 import BatchShortenerModal from './components/BatchShortenerModal';
+import ProLimitModal from './components/ProLimitModal';
+
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import * as api from './api';
 import { useToast } from './context/ToastContext';
@@ -69,6 +71,8 @@ function App() {
   const [showBatch, setShowBatch] = useState(false);
   const [initialUrl, setInitialUrl] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+
 
   // Keyboard Shortcuts
   useKeyboardShortcuts({
@@ -121,10 +125,17 @@ function App() {
       toast('Link created successfully!', 'success');
       return data;
     } catch (err) {
-      toast(err.response?.data?.message || 'Failed to create link', 'error');
+      if (err.response?.status === 403 && err.response?.data?.message?.toLowerCase().includes('limit')) {
+        setShowCreate(false);
+        setShowBatch(false);
+        setShowLimitModal(true);
+      } else {
+        toast(err.response?.data?.message || 'Failed to create link', 'error');
+      }
       throw err;
     }
   };
+
 
   const deleteLink = async (id) => {
     try {
@@ -236,7 +247,14 @@ function App() {
           onAddBatch={addLink}
         />
       )}
+
+      {showLimitModal && (
+        <ProLimitModal
+          onClose={() => setShowLimitModal(false)}
+        />
+      )}
     </>
+
   );
 }
 

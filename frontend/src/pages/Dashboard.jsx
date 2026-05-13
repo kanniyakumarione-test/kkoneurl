@@ -1,8 +1,10 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   TrendingUp, Link2, MousePointerClick, Users,
-  ArrowUpRight, Clock, Copy, ExternalLink, BarChart3
+  ArrowUpRight, Clock, Copy, ExternalLink, BarChart3, Sparkles
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { useToast } from '../context/ToastContext';
 
@@ -25,7 +27,9 @@ const StatCard = ({ icon, label, value, change, color, borderColor }) => (
 );
 
 const Dashboard = ({ links }) => {
+  const { profile } = useAuth();
   const safeLinks = Array.isArray(links) ? links : [];
+
   const toast = useToast();
   const [period, setPeriod] = useState('7d');
   const chartContainerRef = useRef(null);
@@ -72,9 +76,17 @@ const Dashboard = ({ links }) => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black font-display tracking-tight mb-2">Dashboard</h1>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-black font-display tracking-tight">Dashboard</h1>
+            {profile?.plan === 'pro' && (
+              <span className="bg-purple/20 text-purple-light text-[10px] font-black px-3 py-1 rounded-full border border-purple/30 uppercase tracking-widest flex items-center gap-1">
+                <Sparkles size={10} /> Pro
+              </span>
+            )}
+          </div>
           <p className="text-white/40 text-sm">Welcome back! Tracking {safeLinks.length} active links.</p>
         </div>
+
         <div className="flex bg-bg-card border border-white/10 p-1 rounded-xl">
           {['7d', '30d', '90d'].map(p => (
             <button

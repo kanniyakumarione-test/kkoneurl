@@ -14,11 +14,14 @@ export const AuthProvider = ({ children }) => {
     try {
       const { data } = await api.getProfile();
       setProfile({
+        id: data.id,
+        email: data.email,
         displayName: data.display_name,
         username: data.username,
         avatar: data.avatar,
         bio: data.bio,
         settings: data.settings,
+        plan: data.plan || 'free',
         isAdmin: data.is_admin === true
       });
     } catch (err) {
@@ -35,7 +38,6 @@ export const AuthProvider = ({ children }) => {
           const token = await result.user.getIdToken();
           localStorage.setItem('token', token);
           await loadProfile();
-          console.log('Redirect Sign-In Successful:', result.user.email);
         }
       })
       .catch((error) => {
@@ -67,12 +69,10 @@ export const AuthProvider = ({ children }) => {
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
-      // Fallback for browsers/environments where popups are blocked
       if (error?.code === 'auth/popup-blocked' || error?.code === 'auth/cancelled-popup-request') {
         await signInWithRedirect(auth, googleProvider);
         return;
       }
-      console.error('Google Sign-In Initiation Error:', error);
       throw error;
     }
   };

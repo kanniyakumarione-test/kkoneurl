@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { BarChart3, Globe, Smartphone, Monitor, Tablet, TrendingUp } from 'lucide-react';
+import { BarChart3, Globe, Smartphone, Monitor, Tablet, TrendingUp, Sparkles, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
 import {
   AreaChart, Area, BarChart, Bar, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip
@@ -9,7 +12,10 @@ import {
 const COLORS = ['#6c63ff', '#00d4ff', '#43e97b', '#ff6584', '#ff9a3c'];
 
 const Analytics = ({ links }) => {
+  const { profile } = useAuth();
+  const navigate = useNavigate();
   const safeLinks = Array.isArray(links) ? links : [];
+
   const [searchParams] = useSearchParams();
   const [selected, setSelected] = useState('');
   const trendChartRef = useRef(null);
@@ -132,12 +138,31 @@ const Analytics = ({ links }) => {
         </div>
 
         {/* Geo */}
-        <div className="card">
+        <div className="card relative overflow-hidden">
           <div className="flex items-center gap-2 mb-8">
             <Globe size={18} className="text-cyan" />
             <h3 className="font-bold">Top Countries</h3>
           </div>
-          <div className="space-y-4">
+          
+          {profile?.plan !== 'pro' && !profile?.is_admin ? (
+            <div className="absolute inset-x-0 bottom-0 top-[60px] bg-bg-card/40 backdrop-blur-md z-10 flex flex-col items-center justify-center p-8 text-center space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-cyan/10 flex items-center justify-center text-cyan">
+                <Lock size={24} />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold mb-1">Geo-Analytics is Locked</h4>
+                <p className="text-[10px] text-white/40 max-w-[200px]">Upgrade to Pro to see which countries your clicks are coming from.</p>
+              </div>
+              <button 
+                onClick={() => navigate('/settings')}
+                className="btn btn-primary !py-2 !px-6 text-[9px] font-black uppercase tracking-widest flex items-center gap-2"
+              >
+                Upgrade <Sparkles size={10} />
+              </button>
+            </div>
+          ) : null}
+
+          <div className={`space-y-4 ${profile?.plan !== 'pro' ? 'opacity-20 pointer-events-none select-none' : ''}`}>
             {geoData.length > 0 ? geoData.map((g, i) => (
               <div key={g.country}>
                 <div className="flex justify-between text-sm mb-2">
