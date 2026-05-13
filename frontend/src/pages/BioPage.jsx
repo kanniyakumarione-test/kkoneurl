@@ -94,20 +94,20 @@ const BioPage = ({ bioPage, setBioPage }) => {
     const loadProfile = async () => {
       try {
         const { data } = await api.getProfile();
-        const profile = {
+        const profileData = {
           username: data.username || '',
           displayName: data.display_name || '',
           bio: data.bio || '',
           avatar: data.avatar || '',
-           theme: data.theme || 'dark-purple',
+          theme: data.theme || 'dark-purple',
           customBg: data.custom_bg || 'linear-gradient(135deg, #1a1a2e, #16213e)',
           customAccent: data.custom_accent || '#6c63ff',
           links: data.bio_links || [],
           socialLinks: data.social_links || {},
           embeds: data.embeds || [],
         };
-        setBioPage(profile);
-        setOriginalUsername(profile.username);
+        setBioPage(profileData);
+        setOriginalUsername(profileData.username);
         
         if (data.username_customized && data.username_last_changed) {
           const lastChanged = new Date(data.username_last_changed);

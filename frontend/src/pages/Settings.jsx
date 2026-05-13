@@ -33,7 +33,7 @@ const SettingsRow = ({ label, desc, children }) => (
 
 const Settings = () => {
   const toast = useToast();
-  const { logout, refreshProfile } = useAuth();
+  const { logout, refreshProfile, profile } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
