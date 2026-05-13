@@ -10,7 +10,7 @@ const findOrCreateDbUser = async ({ email, name, avatar }) => {
 
   const { data: existing, error: lookupError } = await supabase
     .from('users')
-    .select('id, email, display_name, username, avatar, is_admin, plan')
+    .select('id, email, display_name, username, avatar, is_admin, plan, is_banned')
     .eq('email', normalizedEmail)
     .maybeSingle();
 
@@ -70,6 +70,10 @@ exports.protect = async (req, res, next) => {
       name: decodedToken.name,
       avatar: decodedToken.picture
     });
+    
+    if (dbUser.is_banned) {
+      return res.status(403).json({ message: 'Your account has been suspended. Please contact support.' });
+    }
 
     // Attach user info to request
     // Always use Supabase UUID as req.user.id to match DB schema.

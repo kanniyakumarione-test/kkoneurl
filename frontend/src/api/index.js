@@ -82,5 +82,9 @@ export const fetchGlobalStats = () => API.get('/public-stats');
 export const fetchAdminStats = () => API.get('/admin/stats');
 export const fetchAdminUsers = () => API.get('/admin/users');
 export const fetchAdminLinks = () => API.get('/admin/links');
+export const updateUserPlan = (id, plan) => API.patch(`/admin/users/${id}/plan`, { plan });
+export const toggleUserBan = (id) => API.patch(`/admin/users/${id}/ban`);
+export const toggleUserVerify = (id) => API.patch(`/admin/users/${id}/verify`);
+export const fetchGrowthStats = () => API.get('/admin/growth');
 
 export default API;
