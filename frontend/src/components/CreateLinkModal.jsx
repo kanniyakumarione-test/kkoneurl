@@ -7,7 +7,7 @@ import { generateId, generateSlug } from '../store/linksStore';
 
 
 const CreateLinkModal = ({ onClose, onAdd, initialUrl }) => {
-  const { profile } = useAuth();
+  const { profile, isAdmin } = useAuth();
   const toast = useToast();
 
   const [loading, setLoading] = useState(false);
@@ -88,7 +88,7 @@ const CreateLinkModal = ({ onClose, onAdd, initialUrl }) => {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center justify-between">
                     Custom Slug
-                    {profile?.plan !== 'pro' && !profile?.is_admin && (
+                    {profile?.plan !== 'pro' && !isAdmin && (
                       <span className="flex items-center gap-1 text-purple-light text-[8px] animate-pulse">
                         <Sparkles size={8} /> PRO
                       </span>
@@ -97,17 +97,17 @@ const CreateLinkModal = ({ onClose, onAdd, initialUrl }) => {
                   <div className="flex relative">
                     <span className="px-4 py-3 bg-white/5 border border-white/10 border-r-0 rounded-l-xl text-[10px] font-bold text-white/20">kkoneurl.kanniyakumarione.com/</span>
                     <input 
-                      className={`input !rounded-l-none ${profile?.plan !== 'pro' && !profile?.is_admin ? 'opacity-50 cursor-not-allowed' : ''}`} 
-                      placeholder={profile?.plan !== 'pro' && !profile?.is_admin ? "Pro Only" : "slug"} 
+                      className={`input !rounded-l-none ${profile?.plan !== 'pro' && !isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                      placeholder={profile?.plan !== 'pro' && !isAdmin ? "Pro Only" : "slug"} 
                       value={form.customSlug} 
                       onChange={e => {
-                        if (profile?.plan !== 'pro' && !profile?.is_admin) {
+                        if (profile?.plan !== 'pro' && !isAdmin) {
                           toast('Custom slugs require a Pro subscription.', 'info');
                           return;
                         }
                         setForm({...form, customSlug: e.target.value});
                       }} 
-                      readOnly={profile?.plan !== 'pro' && !profile?.is_admin}
+                      readOnly={profile?.plan !== 'pro' && !isAdmin}
                     />
                   </div>
                 </div>

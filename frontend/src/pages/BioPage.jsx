@@ -77,7 +77,7 @@ const BioPreview = ({ bioPage, theme, className = "" }) => {
 const BioPage = ({ bioPage, setBioPage }) => {
   const navigate = useNavigate();
   const toast = useToast();
-  const { refreshProfile, profile } = useAuth();
+  const { refreshProfile, profile, isAdmin } = useAuth();
   const [activeTab, setActiveTab] = useState('links');
 
   const [newLink, setNewLink] = useState({ label: '', url: '', icon: '🔗', color: '#6c63ff' });
@@ -224,7 +224,7 @@ const BioPage = ({ bioPage, setBioPage }) => {
 
               {activeTab === 'embeds' && (
                 <div className="space-y-6">
-                  {profile?.plan !== 'pro' && !profile?.is_admin ? (
+                  {profile?.plan !== 'pro' && !isAdmin ? (
                     <div className="p-12 border border-dashed border-white/10 rounded-[2rem] bg-white/[0.01] flex flex-col items-center text-center space-y-4">
                       <div className="w-12 h-12 rounded-2xl bg-purple/10 flex items-center justify-center text-purple-light"><Play size={24} /></div>
                       <div>
@@ -315,16 +315,16 @@ const BioPage = ({ bioPage, setBioPage }) => {
                     {THEMES.map(t => (
                       <button 
                         key={t.id} 
-                        className={`p-4 rounded-2xl border transition-all text-left space-y-3 relative overflow-hidden ${bioPage.theme === t.id ? 'border-purple-light bg-purple/10' : 'border-white/5 bg-white/5 hover:border-white/20'} ${t.pro && profile?.plan !== 'pro' && !profile?.is_admin ? 'opacity-70 grayscale' : ''}`} 
+                        className={`p-4 rounded-2xl border transition-all text-left space-y-3 relative overflow-hidden ${bioPage.theme === t.id ? 'border-purple-light bg-purple/10' : 'border-white/5 bg-white/5 hover:border-white/20'} ${t.pro && profile?.plan !== 'pro' && !isAdmin ? 'opacity-70 grayscale' : ''}`} 
                         onClick={() => {
-                          if (t.pro && profile?.plan !== 'pro' && !profile?.is_admin) {
+                          if (t.pro && profile?.plan !== 'pro' && !isAdmin) {
                             toast('This is a Pro theme! Upgrade to unlock.', 'info');
                             return;
                           }
                           setBioPage({...bioPage, theme: t.id})
                         }}
                       >
-                        {t.pro && profile?.plan !== 'pro' && !profile?.is_admin && (
+                        {t.pro && profile?.plan !== 'pro' && !isAdmin && (
                           <div className="absolute top-2 right-2 bg-purple/80 text-white p-1 rounded-lg">
                             <Sparkles size={10} />
                           </div>

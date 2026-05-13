@@ -33,7 +33,7 @@ const SettingsRow = ({ label, desc, children }) => (
 
 const Settings = () => {
   const toast = useToast();
-  const { logout, refreshProfile, profile } = useAuth();
+  const { logout, refreshProfile, profile, isAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -222,7 +222,7 @@ const Settings = () => {
 
 
       <SettingsSection title="Developer API" icon={<Zap size={14} />}>
-        {form.plan === 'pro' || profile?.is_admin ? (
+        {form.plan === 'pro' || isAdmin ? (
           <>
             <SettingsRow label="API Key" desc="Use this key to shorten links programmatically">
               <div className="flex items-center gap-2">

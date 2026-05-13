@@ -12,7 +12,7 @@ import {
 const COLORS = ['#6c63ff', '#00d4ff', '#43e97b', '#ff6584', '#ff9a3c'];
 
 const Analytics = ({ links }) => {
-  const { profile } = useAuth();
+  const { profile, isAdmin } = useAuth();
   const navigate = useNavigate();
   const safeLinks = Array.isArray(links) ? links : [];
 
@@ -144,7 +144,7 @@ const Analytics = ({ links }) => {
             <h3 className="font-bold">Top Countries</h3>
           </div>
           
-          {profile?.plan !== 'pro' && !profile?.is_admin ? (
+          {profile?.plan !== 'pro' && !isAdmin ? (
             <div className="absolute inset-x-0 bottom-0 top-[60px] bg-bg-card/40 backdrop-blur-md z-10 flex flex-col items-center justify-center p-8 text-center space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-cyan/10 flex items-center justify-center text-cyan">
                 <Lock size={24} />
