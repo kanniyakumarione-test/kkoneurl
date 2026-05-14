@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Shield, Mail, User2, Link2, MousePointerClick, Activity, Globe, Calendar, CheckCircle2, AlertCircle, Sparkles, Ban, CheckCircle, Search, TrendingUp, DollarSign } from 'lucide-react';
+import { Shield, Mail, User2, Link2, MousePointerClick, Activity, Globe, Calendar, CheckCircle2, AlertCircle, Sparkles, Ban, CheckCircle, Search, TrendingUp, DollarSign, Eye, X, Flame, ExternalLink } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 import * as api from '../api';
@@ -11,6 +11,7 @@ const AdminPanel = () => {
   const [stats, setStats] = useState({ totalUsers: 0, totalLinks: 0, totalClicks: 0, totalPro: 0 });
   const [users, setUsers] = useState([]);
   const [links, setLinks] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [growthData, setGrowthData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -123,9 +124,9 @@ const AdminPanel = () => {
                 <p className="text-[10px] font-black uppercase tracking-widest text-white/40">{stat.label}</p>
               </div>
               <p className="text-4xl font-black tracking-tighter text-white">{stat.value?.toLocaleString() || 0}</p>
-              <div className="mt-4 flex items-center gap-2 text-[10px] text-white/30">
-                <Activity size={12} className="text-green" />
-                <span>+12% from last month</span>
+              <div className="mt-4 flex items-center gap-2 text-[10px]">
+                <div className="w-1.5 h-1.5 rounded-full bg-green animate-pulse" />
+                <span className="text-white/30 uppercase tracking-widest font-bold">Live Synchronized</span>
               </div>
             </div>
           </div>
@@ -263,6 +264,13 @@ const AdminPanel = () => {
                         >
                           <Ban size={14} />
                         </button>
+                        <button 
+                          onClick={() => setSelectedUser(u)}
+                          className="p-2 rounded-lg border border-white/5 bg-white/5 text-white/20 hover:text-purple-light hover:bg-purple/10 hover:border-purple/30 transition-all"
+                          title="View User Data"
+                        >
+                          <Eye size={14} />
+                        </button>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right text-white/40 font-medium">
@@ -303,8 +311,8 @@ const AdminPanel = () => {
       <section className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link2 size={20} className="text-green" />
-            <h2 className="text-xl font-black font-display tracking-tight text-white">System-wide Links</h2>
+            <Flame size={20} className="text-orange-400" />
+            <h2 className="text-xl font-black font-display tracking-tight text-white">Top 5 Global Trending</h2>
           </div>
           <span className="text-[10px] font-bold px-3 py-1 bg-white/5 rounded-full text-white/40 border border-white/5">
             {links.length} Links
@@ -324,7 +332,10 @@ const AdminPanel = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {links.map((l) => (
+                {links
+                  .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
+                  .slice(0, 5)
+                  .map((l) => (
                   <tr key={l.id} className="group hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -390,6 +401,73 @@ const AdminPanel = () => {
           </div>
         </div>
       </section>
+
+      {/* User Details Modal */}
+      {selectedUser && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/90 backdrop-blur-xl animate-fade-in">
+          <div className="card max-w-4xl w-full max-h-[85vh] overflow-hidden flex flex-col border-white/10 shadow-3xl shadow-purple/10 animate-scale-in !p-0">
+            <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-purple/10 flex items-center justify-center font-bold text-xl text-purple-light">
+                  {selectedUser.display_name?.[0] || selectedUser.email?.[0]}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black tracking-tight">{selectedUser.display_name || 'Anonymous'}</h3>
+                  <p className="text-white/40 text-sm font-mono">{selectedUser.email}</p>
+                </div>
+              </div>
+              <button onClick={() => setSelectedUser(null)} className="p-3 bg-white/5 rounded-2xl hover:bg-red/10 hover:text-red transition-all">
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Account Plan</p>
+                  <p className="text-xl font-black uppercase text-purple-light">{selectedUser.plan || 'Free'}</p>
+                </div>
+                <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Total Links</p>
+                  <p className="text-xl font-black">{links.filter(l => l.user_id === selectedUser.id).length}</p>
+                </div>
+                <div className="p-6 bg-white/5 rounded-3xl border border-white/5">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-white/30 mb-2">Total Clicks</p>
+                  <p className="text-xl font-black">{links.filter(l => l.user_id === selectedUser.id).reduce((sum, l) => sum + (l.clicks || 0), 0)}</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-2 text-white/40 uppercase tracking-[0.2em] font-black text-[10px]">
+                  <Link2 size={12} /> <span>User Links Explorer</span>
+                </div>
+                <div className="space-y-4">
+                  {links.filter(l => l.user_id === selectedUser.id).map(l => (
+                    <div key={l.id} className="p-5 bg-white/5 border border-white/5 rounded-2xl flex items-center justify-between group hover:border-purple/30 transition-all">
+                      <div className="min-w-0">
+                        <p className="font-bold truncate max-w-[300px]">{l.title || 'Untitled'}</p>
+                        <p className="text-[10px] text-white/20 font-mono truncate max-w-[400px]">kkoneurl.com/{l.short_code}</p>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <p className="font-black text-purple-light">{l.clicks || 0}</p>
+                          <p className="text-[9px] text-white/20 uppercase tracking-widest font-black">Clicks</p>
+                        </div>
+                        <a href={l.original_url} target="_blank" rel="noreferrer" className="p-2 bg-white/5 rounded-xl hover:text-white transition-colors">
+                          <ExternalLink size={16} className="opacity-40" />
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                  {links.filter(l => l.user_id === selectedUser.id).length === 0 && (
+                    <div className="text-center py-20 opacity-20 italic">No links created by this user yet.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
