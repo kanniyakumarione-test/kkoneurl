@@ -94,18 +94,18 @@ const CreateLinkModal = ({ onClose, onAdd, initialUrl }) => {
                       </span>
                     )}
                   </label>
-                  <div className="flex relative">
-                    <span className="px-4 py-3 bg-white/5 border border-white/10 border-r-0 rounded-l-xl text-[10px] font-bold text-white/20">kkoneurl.kanniyakumarione.com/</span>
+                  <div className="flex flex-col space-y-1">
+                    <span className="text-[9px] font-black text-white/20 uppercase tracking-widest ml-1">kkoneurl.kanniyakumarione.com /</span>
                     <input 
-                      className={`input !rounded-l-none ${profile?.plan !== 'pro' && !isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`} 
-                      placeholder={profile?.plan !== 'pro' && !isAdmin ? "Pro Only" : "slug"} 
+                      className={`input ${profile?.plan !== 'pro' && !isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`} 
+                      placeholder={profile?.plan !== 'pro' && !isAdmin ? "Pro Feature" : "your-custom-slug"} 
                       value={form.customSlug} 
                       onChange={e => {
                         if (profile?.plan !== 'pro' && !isAdmin) {
                           toast('Custom slugs require a Pro subscription.', 'info');
                           return;
                         }
-                        setForm({...form, customSlug: e.target.value});
+                        setForm({...form, customSlug: e.target.value.toLowerCase().replace(/\s+/g, '-')});
                       }} 
                       readOnly={profile?.plan !== 'pro' && !isAdmin}
                     />
