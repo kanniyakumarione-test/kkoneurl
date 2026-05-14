@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BarChart3, Globe, Smartphone, Monitor, Tablet, TrendingUp, Sparkles, Lock, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
