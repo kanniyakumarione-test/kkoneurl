@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { BarChart3, Globe, Smartphone, Monitor, Tablet, TrendingUp, Sparkles, Lock } from 'lucide-react';
+import { BarChart3, Globe, Smartphone, Monitor, Tablet, TrendingUp, Sparkles, Lock, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -18,6 +18,7 @@ const Analytics = ({ links }) => {
 
   const [searchParams] = useSearchParams();
   const [selected, setSelected] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const trendChartRef = useRef(null);
   const [trendChartReady, setTrendChartReady] = useState(false);
   const [trendChartWidth, setTrendChartWidth] = useState(0);
@@ -54,13 +55,54 @@ const Analytics = ({ links }) => {
   const deviceStats = link.device_stats || link.deviceStats || { mobile: 0, desktop: 0, tablet: 0 };
   const geoStats = link.geo_stats || link.geoStats || {};
   const browserStats = link.browser_stats || link.browserStats || {};
-  const dailyClicks = link.daily_clicks || link.dailyClicks || [];
+  const { chartData, trend } = useMemo(() => {
+    const days = 7; // Currently analytics shows last 7 days by default, can be expanded
+    const data = [];
+    const now = new Date();
+    
+    // Create a map of existing clicks
+    const clickMap = {};
+    const daily = link.daily_clicks || link.dailyClicks || [];
+    daily.forEach(d => {
+      clickMap[d.date] = (clickMap[d.date] || 0) + d.clicks;
+    });
 
-  const deviceData = [
-    { name: 'Mobile', value: deviceStats.mobile || 0 },
-    { name: 'Desktop', value: deviceStats.desktop || 0 },
-    { name: 'Tablet', value: deviceStats.tablet || 0 },
-  ];
+    let currentPeriodTotal = 0;
+    let previousPeriodTotal = 0;
+
+    // Fill in every day in the range (7 days)
+    for (let i = 0; i < days; i++) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const clicks = clickMap[dateStr] || 0;
+      
+      data.unshift({
+        date: dateStr,
+        displayDate: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        clicks: clicks
+      });
+      
+      currentPeriodTotal += clicks;
+    }
+
+    // Rough trend calculation (vs previous 7 days)
+    for (let i = days; i < days * 2; i++) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      previousPeriodTotal += (clickMap[dateStr] || 0);
+    }
+
+    let trendValue = 0;
+    if (previousPeriodTotal > 0) {
+      trendValue = ((currentPeriodTotal - previousPeriodTotal) / previousPeriodTotal) * 100;
+    } else if (currentPeriodTotal > 0) {
+      trendValue = 100;
+    }
+
+    return { chartData: data, trend: trendValue.toFixed(1) };
+  }, [link]);
 
   const geoData = Object.entries(geoStats)
     .sort((a, b) => b[1] - a[1])
@@ -76,15 +118,33 @@ const Analytics = ({ links }) => {
           <h1 className="text-3xl font-black font-display tracking-tight mb-2">Analytics</h1>
           <p className="text-white/40 text-sm">Deep insights for your short links</p>
         </div>
-        <select
-          className="input !w-auto min-w-[240px] !bg-bg-card border-white/5"
-          value={selected}
-          onChange={e => setSelected(e.target.value)}
-        >
-          {safeLinks.map(l => (
-            <option key={l._id} value={l._id}>{l.title || l.shortCode}</option>
-          ))}
-        </select>
+        <div className="relative min-w-[240px]">
+          <button 
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="input !w-full !bg-bg-card border-white/5 flex items-center justify-between group hover:border-purple/50 transition-all"
+          >
+            <span className="truncate pr-4">{link.title || link.short_code}</span>
+            <ChevronDown size={16} className={`text-white/20 group-hover:text-purple transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {dropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-bg-card border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden z-50 animate-fade-in py-2 backdrop-blur-xl">
+              {safeLinks.map(l => (
+                <button
+                  key={l._id || l.id}
+                  className={`w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5 flex flex-col gap-0.5 ${(l._id || l.id) === selected ? 'bg-purple/10 text-purple-light border-l-2 border-purple' : 'text-white/60'}`}
+                  onClick={() => {
+                    setSelected(l._id || l.id);
+                    setDropdownOpen(false);
+                  }}
+                >
+                  <span className="font-bold truncate">{l.title || l.short_code}</span>
+                  <span className="text-[10px] opacity-40 truncate">kkoneurl.com/{l.short_code}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Link Banner */}
@@ -116,11 +176,14 @@ const Analytics = ({ links }) => {
         <div className="card">
           <div className="flex items-center justify-between mb-8">
             <h3 className="font-bold">Click Trend</h3>
-            <span className="badge bg-green/10 text-green"><TrendingUp size={12} /> +14.2%</span>
+            <span className={`badge ${trend >= 0 ? 'bg-green/10 text-green' : 'bg-pink/10 text-pink'}`}>
+              {trend >= 0 ? <TrendingUp size={12} className="mr-1" /> : null}
+              {trend >= 0 ? '+' : ''}{trend}%
+            </span>
           </div>
           <div ref={trendChartRef} style={{ height: 220, width: '100%', minHeight: 220, minWidth: 0 }}>
               {trendChartReady && trendChartWidth > 0 ? (
-                <AreaChart width={trendChartWidth} height={220} data={dailyClicks}>
+                <AreaChart width={trendChartWidth} height={220} data={chartData}>
                   <defs>
                     <linearGradient id="aG" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#6c63ff" stopOpacity={0.3} />

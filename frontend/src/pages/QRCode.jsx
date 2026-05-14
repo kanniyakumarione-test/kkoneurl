@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { QrCode, Download, Palette, Link2, Check } from 'lucide-react';
+import { QrCode, Download, Palette, Link2, Check, ChevronDown } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 
 const QR_SIZES = [128, 256, 512];
@@ -24,8 +24,9 @@ const QRCode = ({ links }) => {
   const [style, setStyle] = useState(QR_STYLES[0]);
   const [useCustom, setUseCustom] = useState(false);
   const [customUrl, setCustomUrl] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const link = safeLinks.find(l => l._id === selected) || safeLinks[0];
+  const link = safeLinks.find(l => (l._id || l.id) === selected) || safeLinks[0];
   const domain = 'kkoneurl.kanniyakumarione.com';
   const qrText = useCustom ? (customUrl || `https://${domain}`) : `https://${domain}/${link?.short_code || ''}`;
   const qrSrc = getQRUrl(qrText, size, style.fg, style.bg);
@@ -67,11 +68,35 @@ const QRCode = ({ links }) => {
             {useCustom ? (
               <input className="input" placeholder="https://..." value={customUrl} onChange={e => setCustomUrl(e.target.value)} />
             ) : (
-              <select className="input" value={selected} onChange={e => setSelected(e.target.value)}>
-                {safeLinks.map(l => (
-                  <option key={l._id} value={l._id}>{l.title || l.short_code}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <button 
+                  type="button"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="input !w-full !bg-bg-card border-white/5 flex items-center justify-between group hover:border-purple/50 transition-all text-left"
+                >
+                  <span className="truncate pr-4">{link?.title || link?.short_code || 'Select a link'}</span>
+                  <ChevronDown size={16} className={`text-white/20 group-hover:text-purple transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {dropdownOpen && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-bg-card border border-white/10 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden z-50 animate-fade-in py-2 backdrop-blur-xl">
+                    {safeLinks.map(l => (
+                      <button
+                        key={l._id || l.id}
+                        type="button"
+                        className={`w-full text-left px-4 py-3 text-sm transition-colors hover:bg-white/5 flex flex-col gap-0.5 ${(l._id || l.id) === selected ? 'bg-purple/10 text-purple-light border-l-2 border-purple' : 'text-white/60'}`}
+                        onClick={() => {
+                          setSelected(l._id || l.id);
+                          setDropdownOpen(false);
+                        }}
+                      >
+                        <span className="font-bold truncate">{l.title || l.short_code}</span>
+                        <span className="text-[10px] opacity-40 truncate">kkoneurl.com/{l.short_code}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

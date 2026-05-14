@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   TrendingUp, Link2, MousePointerClick, Users,
   ArrowUpRight, Clock, Copy, ExternalLink, BarChart3, Sparkles
@@ -28,6 +29,7 @@ const StatCard = ({ icon, label, value, change, color, borderColor }) => (
 );
 
 const Dashboard = ({ links }) => {
+  const navigate = useNavigate();
   const { profile } = useAuth();
   const safeLinks = Array.isArray(links) ? links : [];
 
@@ -53,22 +55,57 @@ const Dashboard = ({ links }) => {
     return () => observer.disconnect();
   }, []);
 
-  const totalClicks = useMemo(() => safeLinks.reduce((s, l) => s + (l.clicks || 0), 0), [safeLinks]);
-  const totalUnique = useMemo(() => safeLinks.reduce((s, l) => s + (l.unique_clicks || 0), 0), [safeLinks]);
+  const { totalClicks, totalUnique } = useMemo(() => {
+    const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+    const startDateStr = startDate.toISOString().split('T')[0];
+
+    let clicks = 0;
+    let unique = 0;
+
+    safeLinks.forEach(link => {
+      const daily = link.daily_clicks || link.dailyClicks || [];
+      daily.forEach(d => {
+        if (d.date >= startDateStr) clicks += d.clicks;
+      });
+      // Unique clicks are harder to filter by date without a separate table, 
+      // so we'll approximate or use total unique if date isn't stored per unique click.
+      // For now, let's keep unique clicks as total or approximate.
+      unique += (link.unique_clicks || 0); 
+    });
+
+    return { totalClicks: clicks, totalUnique: unique };
+  }, [safeLinks, period]);
   
   const chartData = useMemo(() => {
-    const map = {};
+    const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
+    const data = [];
+    const now = new Date();
+    
+    // Create a map of existing clicks
+    const clickMap = {};
     safeLinks.forEach(link => {
-      const clicks = link.daily_clicks || link.dailyClicks || [];
-      clicks.forEach(d => {
-        map[d.date] = (map[d.date] || 0) + d.clicks;
+      const daily = link.daily_clicks || link.dailyClicks || [];
+      daily.forEach(d => {
+        clickMap[d.date] = (clickMap[d.date] || 0) + d.clicks;
       });
     });
-    const sorted = Object.entries(map)
-      .map(([date, clicks]) => ({ date, clicks }))
-      .sort((a, b) => a.date.localeCompare(b.date));
-    return sorted.length > 0 ? sorted : [{ date: new Date().toISOString().split('T')[0], clicks: 0 }];
-  }, [safeLinks]);
+
+    // Fill in every day in the range
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      data.push({
+        date: dateStr,
+        displayDate: d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+        clicks: clickMap[dateStr] || 0
+      });
+    }
+
+    return data;
+  }, [safeLinks, period]);
 
   const topLinks = [...safeLinks].sort((a, b) => (b.clicks || 0) - (a.clicks || 0)).slice(0, 5);
 
@@ -115,7 +152,7 @@ const Dashboard = ({ links }) => {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="font-bold">Click Traffic</h3>
-              <p className="text-xs text-white/30">Last 7 days data</p>
+              <p className="text-xs text-white/30">Last {period === '7d' ? '7' : period === '30d' ? '30' : '90'} days data</p>
             </div>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-purple rounded-full animate-pulse" />
@@ -157,14 +194,17 @@ const Dashboard = ({ links }) => {
                   <p className="text-sm font-bold truncate">{link.title || link.short_code}</p>
                   <p className="text-[11px] text-purple-light/70 truncate">kkoneurl.kanniyakumarione.com/{link.short_code}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-black">{(link.clicks || 0).toLocaleString()}</p>
-                  <p className="text-[10px] text-white/20 uppercase font-bold tracking-widest">clicks</p>
+                <div className="text-right flex flex-col items-end justify-center h-full">
+                  <p className="text-sm font-black leading-tight">{(link.clicks || 0).toLocaleString()}</p>
+                  <p className="text-[10px] text-white/20 uppercase font-bold tracking-widest leading-none">clicks</p>
                 </div>
               </div>
             ))}
           </div>
-          <button className="w-full mt-8 py-3 rounded-xl border border-white/5 text-xs font-bold text-white/30 hover:bg-white/5 hover:text-white transition-all uppercase tracking-widest">
+          <button 
+            onClick={() => navigate('/links')}
+            className="w-full mt-8 py-3 rounded-xl border border-white/5 text-xs font-bold text-white/30 hover:bg-white/5 hover:text-white transition-all uppercase tracking-widest"
+          >
             View All Links
           </button>
         </div>
