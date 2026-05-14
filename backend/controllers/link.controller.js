@@ -61,13 +61,8 @@ exports.redirectUrl = async (req, res) => {
     const ip = require('request-ip').getClientIp(req) || '0.0.0.0';
 
     if (!code) return res.redirect('https://kkoneurl.kanniyakumarione.com');
-    
-    // Fetch link with owner's plan info
-    const { data: link, error } = await supabase
-      .from('links')
-      .select('*, users(plan, is_admin)') // Removed !inner to prevent 404 if join is tricky
-      .eq('short_code', code)
-      .single();
+
+    const { data: link, error } = await supabase.from('links').select('*').eq('short_code', code).single();
 
     if (error || !link || !link.is_active) {
       return res.redirect('https://kkoneurl.kanniyakumarione.com/404');
@@ -189,20 +184,6 @@ exports.redirectUrl = async (req, res) => {
     // Geo-Redirects (Placeholder for now, requires a Geo-IP lookup)
     // if (link.geo_redirects && link.geo_redirects[countryCode]) { ... }
 
-    // 5. 🚀 THE AD-GATE (Monetization Logic)
-    // If the owner is not Pro, we redirect to the frontend gate page first.
-    // Except if it's already a direct redirect request (we could add a param to skip, but let's keep it simple)
-    const ownerPlan = link.users?.plan || 'free';
-    const isOwnerAdmin = link.users?.is_admin || false;
-    
-    const host = req.get('host');
-    const protocol = req.protocol;
-    const frontendUrl = `${protocol}://${host.replace('api.', '')}`; // Attempt to detect frontend URL
-
-    if (ownerPlan !== 'pro' && !isOwnerAdmin) {
-      return res.redirect(`${frontendUrl}/gate/${code}`);
-    }
-
     res.redirect(finalUrl);
   } catch (err) {
     console.error('Redirect Error:', err);
@@ -273,23 +254,3 @@ exports.getGlobalStats = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-exports.getPublicLinkInfo = async (req, res) => {
-  try {
-    const { code } = req.params;
-    const { data: link, error } = await supabase
-      .from('links')
-      .select('short_code, original_url, title, password, device_routing, users(plan)')
-      .eq('short_code', code)
-      .single();
-
-    if (error || !link) return res.status(404).json({ message: 'Link not found' });
-    
-    // Logic for device routing / A/B testing can be replicated here if needed for the final destination
-    // But for now, just return the data.
-    res.json(link);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-

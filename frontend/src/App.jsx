@@ -18,7 +18,6 @@ import PublicBio from './pages/PublicBio';
 import Auth from './pages/Auth';
 import PasswordGate from './pages/PasswordGate';
 import RedirectHandler from './pages/RedirectHandler';
-import RedirectGate from './pages/RedirectGate';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import CreateLinkModal from './components/CreateLinkModal';
@@ -238,7 +237,6 @@ function App() {
         } />
 
         <Route path="/p/:code" element={<PasswordGate />} />
-        <Route path="/gate/:code" element={<RedirectGate />} />
         <Route path="/@/:username" element={<PublicBio />} />
         <Route path="/@:username" element={<PublicBio />} />
         <Route path="/:code" element={<RedirectHandler />} />

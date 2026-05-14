@@ -7,7 +7,6 @@ const controller = require('../controllers/link.controller');
 
 // Public routes
 router.get('/stats/global', controller.getGlobalStats);
-router.get('/public/:code', controller.getPublicLinkInfo);
 router.get('/:code', controller.redirectUrl);
 
 // Protected routes

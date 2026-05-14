@@ -6,7 +6,7 @@ require('dotenv').config();
 
 const app = express();
 
-// 1. CORS
+// 1. CORS - Most permissive possible for debugging
 app.use(cors());
 
 // 2. Middleware
@@ -22,6 +22,7 @@ app.use('/api/notifications', require('./routes/notification.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/payments', require('./routes/payment.routes'));
 app.use('/api/referrals', require('./routes/referral.routes'));
+
 
 // Public Stats for Landing Page
 const supabase = require('./config/supabase');
@@ -49,10 +50,7 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 const { redirectUrl } = require('./controllers/link.controller');
 
 app.get('/', (req, res) => {
-  const host = req.get('host');
-  const protocol = req.protocol;
-  const frontendUrl = `${protocol}://${host.replace('api.', '')}`;
-  res.redirect(frontendUrl);
+  res.redirect('https://kkoneurl.kanniyakumarione.com');
 });
 
 app.get('/:code', async (req, res, next) => {
@@ -61,13 +59,9 @@ app.get('/:code', async (req, res, next) => {
   if (req.path.startsWith('/api')) return next();
   if (code.includes('.') || code === '404') return next();
 
-  const host = req.get('host');
-  const protocol = req.protocol;
-  const frontendUrl = `${protocol}://${host.replace('api.', '')}`;
-
   const systemRoutes = ['dashboard', 'links', 'analytics', 'qr', 'bio', 'settings', 'login'];
   if (systemRoutes.includes(code) || code.startsWith('@')) {
-    return res.redirect(`${frontendUrl}/${code}`);
+    return res.redirect(`https://kkoneurl.kanniyakumarione.com/${code}`);
   }
 
   await redirectUrl(req, res, next);
