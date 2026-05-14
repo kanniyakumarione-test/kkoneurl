@@ -88,7 +88,7 @@ exports.getProfile = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { displayName, bio, avatar, theme, bio_links, username, settings } = req.body;
+    const { displayName, bio, avatar, theme, bio_links, username, settings, custom_bg, custom_accent, social_links, embeds } = req.body;
     
     // 🛡️ Username Change Policy (60 Days)
     const { data: current, error: fetchError } = await supabase
@@ -103,7 +103,11 @@ exports.updateProfile = async (req, res) => {
       bio,
       avatar,
       theme,
+      custom_bg,
+      custom_accent,
       bio_links,
+      social_links,
+      embeds,
       settings, // ⚙️ Store preferences
       email: req.user.email
     };
@@ -162,7 +166,7 @@ exports.deleteAccount = async (req, res) => {
 exports.getPublicProfile = async (req, res) => {
   try {
     const { username } = req.params;
-    const { data, error } = await supabase.from('users').select('display_name, bio, avatar, theme, bio_links, settings, social_links, embeds, newsletter_settings').eq('username', username).single();
+    const { data, error } = await supabase.from('users').select('display_name, bio, avatar, theme, custom_bg, custom_accent, bio_links, settings, social_links, embeds, newsletter_settings').eq('username', username).single();
     
     if (error || !data) return res.status(404).json({ message: 'Profile not found' });
     
