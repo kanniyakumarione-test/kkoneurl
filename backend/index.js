@@ -21,6 +21,7 @@ app.use('/api/bundles', require('./routes/bundle.routes'));
 app.use('/api/notifications', require('./routes/notification.routes'));
 app.use('/api/admin', require('./routes/admin.routes'));
 app.use('/api/payments', require('./routes/payment.routes'));
+app.use('/api/referrals', require('./routes/referral.routes'));
 
 
 // Public Stats for Landing Page

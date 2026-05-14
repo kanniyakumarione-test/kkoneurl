@@ -86,5 +86,8 @@ export const updateUserPlan = (id, plan) => API.patch(`/admin/users/${id}/plan`,
 export const toggleUserBan = (id) => API.patch(`/admin/users/${id}/ban`);
 export const toggleUserVerify = (id) => API.patch(`/admin/users/${id}/verify`);
 export const fetchGrowthStats = () => API.get('/admin/growth');
+export const getReferralStats = () => API.get('/referrals/stats');
+export const claimScratchCard = () => API.post('/referrals/claim');
+export const redeemPromoCode = (code) => API.post('/referrals/redeem', { code });
 
 export default API;

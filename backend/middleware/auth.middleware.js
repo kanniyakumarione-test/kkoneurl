@@ -10,7 +10,7 @@ const findOrCreateDbUser = async ({ email, name, avatar }) => {
 
   const { data: existing, error: lookupError } = await supabase
     .from('users')
-    .select('id, email, display_name, username, avatar, is_admin, plan, is_banned')
+    .select('id, email, display_name, username, avatar, is_admin, plan, is_banned, link_limit, referral_code')
     .eq('email', normalizedEmail)
     .maybeSingle();
 
@@ -31,9 +31,9 @@ const findOrCreateDbUser = async ({ email, name, avatar }) => {
         username,
         username_customized: false,
         avatar: avatar || null,
-        is_admin: normalizedEmail === ADMIN_EMAIL
+        referral_code: Math.random().toString(36).substring(2, 10).toUpperCase()
       }])
-      .select('id, email, display_name, username, avatar, is_admin, plan')
+      .select('id, email, display_name, username, avatar, is_admin, plan, link_limit, referral_code')
       .single();
 
     if (!error && data?.id) {
@@ -84,7 +84,9 @@ exports.protect = async (req, res, next) => {
       name: dbUser.display_name || decodedToken.name,
       avatar: dbUser.avatar || decodedToken.picture,
       isAdmin: dbUser.is_admin === true,
-      plan: dbUser.plan || 'free'
+      plan: dbUser.plan || 'free',
+      linkLimit: dbUser.link_limit || 100,
+      referralCode: dbUser.referral_code
     };
 
     next();

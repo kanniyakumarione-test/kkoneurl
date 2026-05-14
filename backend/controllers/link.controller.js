@@ -19,9 +19,10 @@ exports.shortenUrl = async (req, res) => {
         .eq('user_id', req.user.id);
 
       if (countError) throw countError;
-      if (count >= 100) {
+      const limit = req.user.linkLimit || 100;
+      if (count >= limit) {
         return res.status(403).json({ 
-          message: 'Link limit reached (100/100). Upgrade to Pro for unlimited links!' 
+          message: `Link limit reached (${count}/${limit}). Refer friends or upgrade to Pro for more links!` 
         });
       }
     }

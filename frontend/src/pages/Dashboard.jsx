@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { useToast } from '../context/ToastContext';
+import ReferralRewards from '../components/ReferralRewards';
 
 const StatCard = ({ icon, label, value, change, color, borderColor }) => (
   <div className={`card relative overflow-hidden group hover:bg-bg-hover`}>
@@ -168,6 +169,9 @@ const Dashboard = ({ links }) => {
           </button>
         </div>
       </div>
+
+      {/* Referral & Rewards System */}
+      <ReferralRewards />
     </div>
   );
 };

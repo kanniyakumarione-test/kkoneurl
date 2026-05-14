@@ -8,10 +8,24 @@ const generateToken = (id) => {
 
 exports.register = async (req, res) => {
   try {
-    const { email, password, displayName } = req.body;
+    const { email, password, displayName, ref } = req.body;
+    
+    let referredBy = null;
+    if (ref) {
+      const { data: referrer } = await supabase.from('users').select('id').eq('referral_code', ref).single();
+      if (referrer) referredBy = referrer.id;
+    }
+
     const { data: user, error } = await supabase
       .from('users')
-      .insert([{ email, password, display_name: displayName, is_admin: (email || '').toLowerCase() === ADMIN_EMAIL }])
+      .insert([{ 
+        email, 
+        password, 
+        display_name: displayName, 
+        is_admin: (email || '').toLowerCase() === ADMIN_EMAIL,
+        referral_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
+        referred_by: referredBy
+      }])
       .select()
       .single();
     if (error) throw error;
@@ -56,7 +70,8 @@ exports.getProfile = async (req, res) => {
         display_name: req.user.email?.split('@')[0] || 'User',
         username: 'user_' + Math.random().toString(36).substring(2, 7),
         username_customized: false,
-        is_admin: (req.user.email || '').toLowerCase() === ADMIN_EMAIL
+        is_admin: (req.user.email || '').toLowerCase() === ADMIN_EMAIL,
+        referral_code: Math.random().toString(36).substring(2, 10).toUpperCase()
       }]).select().single();
       
       if (createError) throw createError;

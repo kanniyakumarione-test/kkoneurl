@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, Eye, EyeOff, Zap, Copy, BarChart3, CreditCard, Sparkles, ArrowUpRight } from 'lucide-react';
+import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, Eye, EyeOff, Zap, Copy, BarChart3, CreditCard, Sparkles, ArrowUpRight, Gift } from 'lucide-react';
 
 
 import { useToast } from '../context/ToastContext';
@@ -51,6 +51,8 @@ const Settings = () => {
     proUntil: null,
     userId: ''
   });
+  const [promoCode, setPromoCode] = useState('');
+  const [redeeming, setRedeeming] = useState(false);
 
 
   useEffect(() => {
@@ -132,6 +134,21 @@ const Settings = () => {
     }
   };
 
+  const handleRedeemPromo = async () => {
+    if (!promoCode) return toast('Please enter a promo code', 'error');
+    setRedeeming(true);
+    try {
+      const { data } = await api.redeemPromoCode(promoCode);
+      toast(data.message, 'success');
+      setPromoCode('');
+      refreshProfile(); // Sync new link limit
+    } catch (err) {
+      toast(err.response?.data?.message || 'Invalid promo code', 'error');
+    } finally {
+      setRedeeming(false);
+    }
+  };
+
   if (loading) return <div className="p-10 text-white/40 uppercase tracking-widest text-[10px] font-black">Loading Preferences...</div>;
 
   return (
@@ -172,6 +189,26 @@ const Settings = () => {
             <input type="checkbox" checked={form.public} className="sr-only peer" onChange={() => setForm({...form, public: !form.public})} />
             <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/40 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple peer-checked:after:bg-white" />
           </label>
+        </SettingsRow>
+      </SettingsSection>
+
+      <SettingsSection title="Promo Codes" icon={<Gift size={14} />}>
+        <SettingsRow label="Redeem Code" desc="Enter a referral reward or promotional code to unlock extra links.">
+          <div className="flex gap-2">
+            <input 
+              className="input sm:w-64 font-mono uppercase" 
+              value={promoCode} 
+              onChange={e => setPromoCode(e.target.value)} 
+              placeholder="REF-XXXXXX" 
+            />
+            <button 
+              onClick={handleRedeemPromo}
+              disabled={redeeming}
+              className="px-6 py-2 rounded-xl bg-purple text-white font-bold text-xs uppercase tracking-widest hover:bg-purple-light transition-all disabled:opacity-50"
+            >
+              {redeeming ? '...' : 'Redeem'}
+            </button>
+          </div>
         </SettingsRow>
       </SettingsSection>
 
