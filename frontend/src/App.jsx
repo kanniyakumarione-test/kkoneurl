@@ -12,6 +12,7 @@ import QRCode from './pages/QRCode';
 import BioPage from './pages/BioPage';
 import Settings from './pages/Settings';
 import AdminPanel from './pages/AdminPanel';
+import AdminUserDetail from './pages/AdminUserDetail';
 import ApiDocs from './pages/ApiDocs';
 import PublicBio from './pages/PublicBio';
 import Auth from './pages/Auth';
@@ -223,6 +224,14 @@ function App() {
           <AdminRoute>
             <AppLayout onShorten={() => { setInitialUrl(''); setShowCreate(true); }} links={links}>
               <AdminPanel links={links} />
+            </AppLayout>
+          </AdminRoute>
+        } />
+
+        <Route path="/admin/user/:id" element={
+          <AdminRoute>
+            <AppLayout onShorten={() => { setInitialUrl(''); setShowCreate(true); }} links={links}>
+              <AdminUserDetail />
             </AppLayout>
           </AdminRoute>
         } />
