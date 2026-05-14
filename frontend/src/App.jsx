@@ -23,6 +23,8 @@ import Terms from './pages/Terms';
 import CreateLinkModal from './components/CreateLinkModal';
 import BatchShortenerModal from './components/BatchShortenerModal';
 import ProLimitModal from './components/ProLimitModal';
+import Upgrade from './pages/Upgrade';
+
 
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import * as api from './api';
@@ -219,6 +221,15 @@ function App() {
             </AppLayout>
           </PrivateRoute>
         } />
+
+        <Route path="/upgrade" element={
+          <PrivateRoute>
+            <AppLayout onShorten={() => { setInitialUrl(''); setShowCreate(true); }} links={links}>
+              <Upgrade />
+            </AppLayout>
+          </PrivateRoute>
+        } />
+
 
         <Route path="/admin" element={
           <AdminRoute>

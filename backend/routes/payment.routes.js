@@ -104,8 +104,9 @@ router.post('/razorpay-verify', async (req, res) => {
         .from('users')
         .update({
           plan: 'pro',
-          pro_until: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString() // 1 Year Pro
+          pro_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 Days Pro
         })
+
         .eq('id', userId);
 
       res.json({ status: 'ok', message: 'Payment verified successfully' });
@@ -139,8 +140,9 @@ router.post('/razorpay-webhook', async (req, res) => {
           .from('users')
           .update({
             plan: 'pro',
-            pro_until: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+            pro_until: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 Days Pro
           })
+
           .eq('id', userId);
       }
       res.json({ status: 'ok' });

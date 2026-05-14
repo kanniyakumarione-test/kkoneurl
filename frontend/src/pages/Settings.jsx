@@ -4,8 +4,8 @@ import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, E
 
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
-import { PayPalButtons } from '@paypal/react-paypal-js';
 import * as api from '../api';
+
 
 
 const SettingsSection = ({ title, icon, children }) => (
@@ -149,52 +149,8 @@ const Settings = () => {
     }
   };
 
-  const handleRazorpayPayment = async () => {
-    try {
-      const amount = 499; // Amount in INR
-      const { data: order } = await api.createRazorpayOrder(amount, form.userId);
-
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_key_here',
-        amount: order.amount,
-        currency: order.currency,
-        name: 'KKOneURL Pro',
-        description: '1 Year Pro Subscription',
-        image: '/favicon.svg',
-        order_id: order.id,
-        handler: async function (response) {
-          try {
-            toast('Payment successful! Verifying...', 'success');
-            await api.verifyRazorpayPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              userId: form.userId
-            });
-            toast('Upgrade successful! Welcome to Pro! 🚀', 'success');
-            refreshProfile();
-          } catch (err) {
-            toast('Payment verification failed', 'error');
-          }
-        },
-        prefill: {
-          name: form.name,
-          email: form.email,
-        },
-        theme: {
-          color: '#8B5CF6',
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      toast('Failed to initialize Razorpay', 'error');
-      console.error(err);
-    }
-  };
-
   if (loading) return <div className="p-10 text-white/40 uppercase tracking-widest text-[10px] font-black">Loading Preferences...</div>;
+
 
   return (
     <div className="max-w-3xl space-y-12 animate-fade-in pb-20">
@@ -269,48 +225,14 @@ const Settings = () => {
               {form.plan} Plan
             </span>
             {form.plan !== 'pro' && (
-              <div className="w-full sm:w-72 space-y-4">
-                <div className="p-4 bg-white/5 border border-white/5 rounded-2xl space-y-4">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-white/40 text-center">Choose Payment Method</p>
-                  
-                  <PayPalButtons
-                    style={{ 
-                      label: 'subscribe',
-                      layout: 'vertical',
-                      color: 'blue',
-                      shape: 'pill',
-                      height: 40
-                    }}
-                    createSubscription={(data, actions) => {
-                      return actions.subscription.create({
-                        plan_id: 'P-6XB22278MB2849041NICLVSA', // Live Plan ID
-                        custom_id: form.userId // Links the payment to the user
-                      });
-                    }}
-                    onApprove={(data, actions) => {
-                      toast('Payment successful! Processing...', 'success');
-                      refreshProfile();
-                    }}
-                    onError={(err) => {
-                      toast('PayPal Checkout failed', 'error');
-                      console.error(err);
-                    }}
-                  />
-
-                  <div className="relative flex items-center justify-center py-2">
-                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
-                    <span className="relative px-3 bg-[#0a0a10] text-[9px] font-black text-white/20 uppercase tracking-widest">OR</span>
-                  </div>
-
-                  <button 
-                    onClick={handleRazorpayPayment}
-                    className="w-full h-[40px] rounded-full bg-[#3395FF] hover:bg-[#2085EE] text-white font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue/10 text-sm"
-                  >
-                    <CreditCard size={16} /> Pay with Razorpay
-                  </button>
-                </div>
-              </div>
+              <button 
+                onClick={() => navigate('/upgrade')}
+                className="btn btn-primary !py-2 !px-6 text-[10px] font-black uppercase tracking-widest flex items-center gap-2"
+              >
+                Upgrade Now <ArrowUpRight size={14} />
+              </button>
             )}
+
 
           </div>
         </SettingsRow>

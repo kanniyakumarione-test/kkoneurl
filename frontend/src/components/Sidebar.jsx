@@ -1,8 +1,9 @@
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Link2, BarChart3, QrCode,
-  Users, Settings, Zap, ChevronRight, X, LogOut, Shield
+  Users, Settings, Zap, ChevronRight, X, LogOut, Shield, Sparkles
 } from 'lucide-react';
+
 import { useAuth } from '../context/AuthContext';
 
 const navItems = [
@@ -13,6 +14,7 @@ const navItems = [
   { path: '/bio', icon: <Users size={18} />, label: 'Bio Page' },
   { path: '/settings', icon: <Settings size={18} />, label: 'Settings' },
 ];
+
 
 const adminNavItem = { path: '/admin', icon: <Shield size={18} />, label: 'Admin Panel' };
 
@@ -92,6 +94,27 @@ const Sidebar = ({ open, onClose, links = [] }) => {
             </NavLink>
           ))}
         </nav>
+
+        {/* Upgrade Card (Only for Free Users) */}
+        {profile?.plan !== 'pro' && (
+          <div className="px-4 mb-4">
+            <div 
+              onClick={() => { onClose(); navigate('/upgrade'); }}
+              className="p-4 bg-gradient-to-br from-purple/20 to-purple-dark/10 border border-purple/30 rounded-2xl cursor-pointer hover:shadow-lg hover:shadow-purple/10 transition-all group overflow-hidden relative"
+            >
+              <div className="absolute -top-4 -right-4 w-12 h-12 bg-purple/20 blur-xl group-hover:bg-purple/40 transition-all" />
+              <div className="relative z-10 space-y-2">
+                <div className="flex items-center gap-2 text-purple-light font-black text-[10px] uppercase tracking-widest">
+                   <Sparkles size={12} /> Go Pro
+                </div>
+                <p className="text-xs text-white/60 font-medium">Unlock unlimited links and analytics.</p>
+                <div className="flex items-center gap-1 text-[10px] font-black text-white uppercase tracking-widest group-hover:translate-x-1 transition-transform">
+                  Upgrade Now <ChevronRight size={10} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* User Profile */}
         <div className="p-4 mt-auto">

@@ -49,11 +49,7 @@ const ProLimitModal = ({ onClose }) => {
           <button 
             onClick={() => {
               onClose();
-              navigate('/settings');
-              // Give it a tiny delay to allow navigation then scroll
-              setTimeout(() => {
-                document.getElementById('subscription-section')?.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
+              navigate('/upgrade');
             }}
             className="btn btn-primary w-full !py-4 flex items-center justify-center gap-2 group text-sm font-black uppercase tracking-widest"
           >
