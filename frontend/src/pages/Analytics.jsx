@@ -50,12 +50,8 @@ const Analytics = ({ links }) => {
 
   const link = safeLinks.find(l => (l._id || l.id) === selected) || safeLinks[0];
 
-  if (!link) return <div className="p-20 text-center text-white/40 font-bold">No links to analyze.</div>;
-
-  const deviceStats = link.device_stats || link.deviceStats || { mobile: 0, desktop: 0, tablet: 0 };
-  const geoStats = link.geo_stats || link.geoStats || {};
-  const browserStats = link.browser_stats || link.browserStats || {};
   const { chartData, trend } = useMemo(() => {
+    if (!link) return { chartData: [], trend: 0 };
     const days = 7; // Currently analytics shows last 7 days by default, can be expanded
     const data = [];
     const now = new Date();
@@ -103,6 +99,12 @@ const Analytics = ({ links }) => {
 
     return { chartData: data, trend: trendValue.toFixed(1) };
   }, [link]);
+
+  if (!link) return <div className="p-20 text-center text-white/40 font-bold">No links to analyze.</div>;
+
+  const deviceStats = link.device_stats || link.deviceStats || { mobile: 0, desktop: 0, tablet: 0 };
+  const geoStats = link.geo_stats || link.geoStats || {};
+  const browserStats = link.browser_stats || link.browserStats || {};
 
   const geoData = Object.entries(geoStats)
     .sort((a, b) => b[1] - a[1])
