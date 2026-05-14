@@ -65,7 +65,7 @@ exports.redirectUrl = async (req, res) => {
     // Fetch link with owner's plan info
     const { data: link, error } = await supabase
       .from('links')
-      .select('*, users!inner(plan, is_admin)')
+      .select('*, users(plan, is_admin)') // Removed !inner to prevent 404 if join is tricky
       .eq('short_code', code)
       .single();
 
@@ -195,10 +195,12 @@ exports.redirectUrl = async (req, res) => {
     const ownerPlan = link.users?.plan || 'free';
     const isOwnerAdmin = link.users?.is_admin || false;
     
+    const host = req.get('host');
+    const protocol = req.protocol;
+    const frontendUrl = `${protocol}://${host.replace('api.', '')}`; // Attempt to detect frontend URL
+
     if (ownerPlan !== 'pro' && !isOwnerAdmin) {
-      // Check if we should skip the gate (e.g., if we are coming back from the gate)
-      // Actually, we'll just redirect to the gate. The gate will then redirect to the final URL.
-      return res.redirect(`https://kkoneurl.kanniyakumarione.com/gate/${code}`);
+      return res.redirect(`${frontendUrl}/gate/${code}`);
     }
 
     res.redirect(finalUrl);
