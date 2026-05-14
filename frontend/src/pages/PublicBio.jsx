@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { ExternalLink, Zap, Camera, Code, Share2, Play, Briefcase, Send } from 'lucide-react';
+import { ExternalLink, Zap, Camera, Code, Share2, Play, Briefcase } from 'lucide-react';
 import * as api from '../api';
 
 const THEMES = {
@@ -25,7 +25,6 @@ const PublicBio = () => {
   const { username } = useParams();
   const [bio, setBio] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState('');
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -39,6 +38,8 @@ const PublicBio = () => {
           bio: data.bio,
           avatar: data.avatar,
           theme: data.theme,
+          customBg: data.custom_bg,
+          customAccent: data.custom_accent,
           links: data.bio_links || [],
           socialLinks: data.social_links || {},
           embeds: data.embeds || [],
@@ -58,25 +59,34 @@ const PublicBio = () => {
     <p className="text-white/40">This link-in-bio page doesn't exist or has been removed.</p>
   </div>;
 
+  const isCustom = bio.theme === 'custom';
   const t = THEMES[bio.theme] || THEMES['dark-purple'];
+  const bgStyle = isCustom ? { background: bio.customBg } : {};
+  const accentColor = isCustom ? bio.customAccent : undefined;
 
   return (
-    <div className={`min-h-screen w-full flex justify-center py-20 px-6 ${t.bg} bg-gradient-to-br ${t.grad} text-white transition-colors duration-500`}>
+    <div 
+      className={`min-h-screen w-full flex justify-center py-20 px-6 ${!isCustom ? `${t.bg} bg-gradient-to-br ${t.grad}` : ''} text-white transition-colors duration-500`}
+      style={bgStyle}
+    >
       <div className="w-full max-w-xl flex flex-col items-center">
         {/* Avatar */}
-        <div className={`w-28 h-28 rounded-full border-4 ${t.border} p-1 mb-6 shadow-2xl shadow-black/50 overflow-hidden`}>
+        <div 
+          className={`w-28 h-28 rounded-full border-4 p-1 mb-6 shadow-2xl shadow-black/50 overflow-hidden ${!isCustom ? t.border : ''}`}
+          style={isCustom ? { borderColor: accentColor } : {}}
+        >
           <div className="w-full h-full rounded-full bg-white/5 overflow-hidden flex items-center justify-center">
-            {bio.avatar ? <img src={bio.avatar} className="w-full h-full object-cover" /> : <span className="text-4xl">👤</span>}
+            {bio.avatar ? <img src={bio.avatar} className="w-full h-full object-cover" alt="Avatar" /> : <span className="text-4xl">👤</span>}
           </div>
         </div>
 
-        <h1 className="text-3xl font-black font-display tracking-tight mb-2 uppercase">{bio.displayName}</h1>
+        <h1 className="text-3xl font-black font-display tracking-tight mb-2 uppercase text-center">{bio.displayName}</h1>
         <p className="text-white/60 text-center mb-6 max-w-md leading-relaxed">{bio.bio}</p>
 
         {/* Social Icons Bar */}
         <div className="flex gap-4 mb-10">
           {Object.entries(bio.socialLinks).map(([platform, url]) => url && (
-            <a key={platform} href={url} target="_blank" rel="noreferrer" className={`w-12 h-12 rounded-full flex items-center justify-center ${t.btn} transition-all hover:scale-110`}>
+            <a key={platform} href={url} target="_blank" rel="noreferrer" className={`w-12 h-12 rounded-full flex items-center justify-center ${t.btn} transition-all hover:scale-110`} style={isCustom ? { color: accentColor } : {}}>
               {SOCIAL_ICONS[platform] || platform[0].toUpperCase()}
             </a>
           ))}
@@ -91,7 +101,7 @@ const PublicBio = () => {
               target="_blank"
               rel="noopener noreferrer"
               className={`group block p-5 rounded-[2rem] border transition-all hover:scale-[1.02] active:scale-[0.98] ${t.btn}`}
-              style={{ borderColor: !t.glass && !t.neo ? `${link.color}40` : undefined }}
+              style={{ borderColor: isCustom ? `${accentColor}40` : (!t.glass && !t.neo ? `${link.color}40` : undefined) }}
             >
               <div className="flex items-center gap-5">
                 <span className="text-2xl">{link.icon}</span>
@@ -114,7 +124,7 @@ const PublicBio = () => {
         ))}
 
 
-        <div className="flex items-center gap-3 opacity-30 font-black text-[10px] uppercase tracking-[0.3em] pb-10">
+        <div className="flex items-center gap-3 opacity-30 font-black text-[10px] uppercase tracking-[0.3em] pb-10" style={isCustom ? { color: accentColor } : {}}>
           <Zap size={14} fill="currentColor" />
           Powered by kkoneurl
         </div>

@@ -343,12 +343,20 @@ const BioPage = ({ bioPage, setBioPage }) => {
                         <div className="space-y-4">
                           <label className="text-[10px] font-black uppercase tracking-widest text-white/40 flex items-center gap-2"><Sparkles size={12} /> Background Design</label>
                           <div className="space-y-3">
-                            <input 
-                              className="input font-mono text-xs" 
-                              value={bioPage.customBg} 
-                              onChange={e => setBioPage({...bioPage, customBg: e.target.value})} 
-                              placeholder="hex, rgb, or linear-gradient..."
-                            />
+                            <div className="flex items-center gap-3">
+                              <input 
+                                type="color" 
+                                className="w-12 h-12 rounded-xl bg-transparent border-0 cursor-pointer flex-shrink-0" 
+                                value={bioPage.customBg.startsWith('#') ? bioPage.customBg : '#000000'} 
+                                onChange={e => setBioPage({...bioPage, customBg: e.target.value})} 
+                              />
+                              <input 
+                                className="input font-mono text-xs flex-1" 
+                                value={bioPage.customBg} 
+                                onChange={e => setBioPage({...bioPage, customBg: e.target.value})} 
+                                placeholder="hex, rgb, or linear-gradient..."
+                              />
+                            </div>
                             <div className="flex gap-2 flex-wrap">
                               {['#000000', 'linear-gradient(135deg, #1a1a2e, #16213e)', 'linear-gradient(45deg, #0f0c29, #302b63, #24243e)'].map(p => (
                                 <button key={p} className="w-8 h-8 rounded-lg border border-white/10" style={{ background: p }} onClick={() => setBioPage({...bioPage, customBg: p})} />
