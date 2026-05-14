@@ -11,10 +11,10 @@ import { useToast } from '../context/ToastContext';
 import ReferralRewards from '../components/ReferralRewards';
 
 const StatCard = ({ icon, label, value, change, color, borderColor }) => (
-  <div className={`card relative overflow-hidden group hover:bg-bg-hover`}>
-    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${borderColor}`} />
+  <div className={`card relative overflow-hidden group hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shadow-glow-sm hover:shadow-${color}/10 cursor-default`}>
+    <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${borderColor} opacity-30 group-hover:opacity-100 transition-opacity duration-500`} />
     <div className="flex items-center justify-between mb-4">
-      <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-${color}`}>
+      <div className={`w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-${color} group-hover:scale-110 transition-transform duration-500`}>
         {icon}
       </div>
       {change !== 0 && (
@@ -23,7 +23,7 @@ const StatCard = ({ icon, label, value, change, color, borderColor }) => (
         </span>
       )}
     </div>
-    <div className="text-3xl font-black font-display tracking-tight mb-1">{value.toLocaleString()}</div>
+    <div className="text-3xl font-black font-display tracking-tight mb-1 group-hover:translate-x-1 transition-transform duration-500">{value.toLocaleString()}</div>
     <div className="text-sm text-white/40 font-medium">{label}</div>
   </div>
 );
@@ -186,15 +186,19 @@ const Dashboard = ({ links }) => {
           <h3 className="font-bold mb-6">Top Links</h3>
           <div className="space-y-4">
             {topLinks.map((link, i) => (
-              <div key={link.id} className="flex items-center gap-4 group">
-                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs font-black text-white/20 group-hover:text-purple transition-colors">
+              <div 
+                key={link.id} 
+                className="flex items-center gap-4 p-2 -mx-2 rounded-xl hover:bg-white/[0.04] hover:translate-x-1 transition-all duration-300 group cursor-pointer"
+                onClick={() => navigate(`/links`)}
+              >
+                <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs font-black text-white/20 group-hover:text-purple group-hover:bg-purple/10 transition-all">
                   #{i + 1}
                 </div>
-                <div className="flex-1 min-width-0">
-                  <p className="text-sm font-bold truncate">{link.title || link.short_code}</p>
-                  <p className="text-[11px] text-purple-light/70 truncate">kkoneurl.kanniyakumarione.com/{link.short_code}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate group-hover:text-white transition-colors">{link.title || link.short_code}</p>
+                  <p className="text-[11px] text-purple-light/70 truncate">kkoneurl.com/{link.short_code}</p>
                 </div>
-                <div className="text-right flex flex-col items-end justify-center h-full">
+                <div className="text-right flex flex-col items-end justify-center h-full group-hover:scale-110 transition-transform">
                   <p className="text-sm font-black leading-tight">{(link.clicks || 0).toLocaleString()}</p>
                   <p className="text-[10px] text-white/20 uppercase font-bold tracking-widest leading-none">clicks</p>
                 </div>

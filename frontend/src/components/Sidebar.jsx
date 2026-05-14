@@ -77,18 +77,18 @@ const Sidebar = ({ open, onClose, links = [] }) => {
               key={item.path}
               to={item.path}
               className={({ isActive }) => `
-                flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all group
+                flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 group
                 ${isActive 
                   ? 'bg-purple/10 text-purple-light shadow-[inset_0_0_0_1px_rgba(108,99,255,0.2)]' 
-                  : 'text-white/40 hover:text-white hover:bg-white/5'}
+                  : 'text-white/40 hover:text-white hover:bg-white/5 hover:translate-x-1'}
               `}
               onClick={onClose}
             >
-              <span className={`transition-colors ${location.pathname === item.path ? 'text-purple' : 'group-hover:text-white'}`}>
+              <span className={`transition-colors duration-300 ${location.pathname === item.path ? 'text-purple' : 'group-hover:text-white group-hover:scale-110'}`}>
                 {item.icon}
               </span>
               <span className="flex-1">{item.label}</span>
-              {location.pathname === item.path && <ChevronRight size={14} className="opacity-40" />}
+              {location.pathname === item.path && <ChevronRight size={14} className="opacity-40 animate-pulse" />}
             </NavLink>
           ))}
         </nav>
@@ -96,18 +96,18 @@ const Sidebar = ({ open, onClose, links = [] }) => {
         {/* User Profile */}
         <div className="p-4 mt-auto">
           <div 
-            className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-purple/30 transition-colors cursor-pointer group relative"
+            className="flex items-center gap-3 p-3 bg-white/5 rounded-2xl border border-white/5 hover:border-purple/30 hover:bg-white/[0.08] hover:scale-[1.02] transition-all duration-300 cursor-pointer group relative shadow-glow-sm hover:shadow-purple/10"
             onClick={() => navigate('/settings')}
           >
-            <div className="w-10 h-10 bg-gradient-to-tr from-purple-light to-cyan rounded-xl flex items-center justify-center font-black text-white text-sm">
+            <div className="w-10 h-10 bg-gradient-to-tr from-purple-light to-cyan rounded-xl flex items-center justify-center font-black text-white text-sm shadow-lg group-hover:shadow-purple/20 transition-all">
               {profile?.displayName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold truncate">{profile?.displayName || user?.email?.split('@')[0]}</p>
+              <p className="text-sm font-bold truncate group-hover:text-purple-light transition-colors">{profile?.displayName || user?.email?.split('@')[0]}</p>
               <p className="text-[11px] text-white/30 font-medium truncate uppercase tracking-widest">Active Member</p>
             </div>
             <button 
-              className="p-2 text-white/20 hover:text-pink transition-colors"
+              className="p-2 text-white/20 hover:text-pink hover:scale-125 transition-all"
               onClick={(e) => {
                 e.stopPropagation();
                 logout();

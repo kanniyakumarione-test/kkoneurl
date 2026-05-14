@@ -37,16 +37,22 @@
 
 @layer components {
   .btn {
-    @apply inline-flex items-center gap-2 px-6 py-3 rounded-md font-semibold transition-all duration-200 cursor-pointer border-none whitespace-nowrap;
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 cursor-pointer border-none whitespace-nowrap active:scale-[0.97] hover:scale-[1.03] select-none;
   }
   .btn-primary {
-    @apply bg-gradient-to-br from-purple to-purple-dark text-white shadow-[0_4px_20px_rgba(108,99,255,0.35)] hover:-translate-y-0.5 hover:shadow-[0_8px_30px_rgba(108,99,255,0.5)];
+    @apply bg-gradient-to-br from-purple to-purple-dark text-white shadow-[0_4px_20px_rgba(108,99,255,0.25)] hover:shadow-[0_8px_35px_rgba(108,99,255,0.45)];
   }
   .btn-secondary {
-    @apply bg-bg-card text-[#f0f0ff] border border-white/10 hover:bg-bg-hover hover:border-purple hover:-translate-y-px;
+    @apply bg-white/[0.03] text-[#f0f0ff] border border-white/5 hover:bg-white/10 hover:border-purple/30;
   }
   .card {
-    @apply bg-bg-card border border-white/10 rounded-lg p-6 transition-all duration-200 hover:border-purple/20 hover:shadow-card;
+    @apply bg-bg-card border border-white/5 rounded-3xl p-6 transition-all duration-500 hover:border-purple/20 hover:shadow-[0_20px_50px_rgba(108,99,255,0.05)] hover:scale-[1.01];
+  }
+  .glass {
+    @apply bg-white/[0.02] backdrop-blur-xl border border-white/5;
+  }
+  .glass-hover {
+    @apply hover:bg-white/[0.05] hover:border-white/10 hover:shadow-2xl transition-all duration-300;
   }
   .input {
     @apply bg-bg-secondary border border-white/10 rounded-md px-4 py-3 text-sm text-[#f0f0ff] w-full focus:border-purple outline-none transition-all;

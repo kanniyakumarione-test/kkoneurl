@@ -158,19 +158,19 @@ const AdminUserDetail = () => {
           <div className="flex flex-wrap items-center gap-3">
              <button 
               onClick={handleToggleVerify}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border transition-all font-black text-xs uppercase tracking-widest ${user.is_verified ? 'bg-cyan/10 border-cyan/30 text-cyan' : 'bg-white/5 border-white/5 text-white/40 hover:text-white'}`}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border transition-all duration-300 font-black text-xs uppercase tracking-widest active:scale-95 hover:scale-105 shadow-glow-sm hover:shadow-cyan/20 ${user.is_verified ? 'bg-cyan/10 border-cyan/30 text-cyan' : 'bg-white/5 border-white/5 text-white/40 hover:text-white hover:border-white/20'}`}
             >
               <CheckCircle size={16} /> {user.is_verified ? 'Unverify' : 'Verify User'}
             </button>
             <button 
               onClick={handleToggleBan}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border transition-all font-black text-xs uppercase tracking-widest ${user.is_banned ? 'bg-green/10 border-green/30 text-green' : 'bg-red/10 border-red/30 text-red'}`}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-2xl border transition-all duration-300 font-black text-xs uppercase tracking-widest active:scale-95 hover:scale-105 shadow-glow-sm hover:shadow-red/20 ${user.is_banned ? 'bg-green/10 border-green/30 text-green' : 'bg-red/10 border-red/30 text-red'}`}
             >
               <Ban size={16} /> {user.is_banned ? 'Unban User' : 'Ban User'}
             </button>
             <button 
               onClick={handleDeleteUser}
-              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-red/10 border border-red/20 text-red rounded-2xl hover:bg-red hover:text-white transition-all font-black text-xs uppercase tracking-widest"
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-red/10 border border-red/20 text-red rounded-2xl hover:bg-red hover:text-white transition-all duration-300 font-black text-xs uppercase tracking-widest active:scale-95 hover:scale-105 hover:shadow-lg hover:shadow-red/30"
             >
               <UserMinus size={16} /> Purge Account
             </button>
@@ -213,7 +213,7 @@ const AdminUserDetail = () => {
 
         <div className="grid grid-cols-1 gap-4">
           {userLinks.map(l => (
-            <div key={l.id} className="group relative p-8 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col md:flex-row md:items-center justify-between gap-8 hover:bg-white/[0.04] hover:border-white/10 transition-all">
+            <div key={l.id} className="group relative p-8 bg-white/[0.02] border border-white/5 rounded-[2.5rem] flex flex-col md:flex-row md:items-center justify-between gap-8 hover:bg-white/[0.04] hover:border-purple/20 hover:scale-[1.01] hover:shadow-2xl hover:shadow-purple/5 transition-all duration-500">
               <div className="flex items-center gap-6 min-w-0">
                 <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-white/20 group-hover:text-purple-light group-hover:bg-purple/10 transition-all flex-shrink-0">
                   <Globe size={24} />
