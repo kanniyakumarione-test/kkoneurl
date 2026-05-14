@@ -4,6 +4,7 @@ import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, E
 
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
+import { usePreferences } from '../context/UserPreferencesContext';
 import { PayPalButtons } from '@paypal/react-paypal-js';
 import * as api from '../api';
 
@@ -34,6 +35,7 @@ const SettingsRow = ({ label, desc, children }) => (
 const Settings = () => {
   const toast = useToast();
   const { logout, refreshProfile, profile, isAdmin } = useAuth();
+  const { soundEnabled, setSoundEnabled, hapticsEnabled, setHapticsEnabled } = usePreferences();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -187,6 +189,20 @@ const Settings = () => {
         <SettingsRow label="Public Profile" desc="Make your /@username page visible">
           <label className="relative inline-flex items-center cursor-pointer">
             <input type="checkbox" checked={form.public} className="sr-only peer" onChange={() => setForm({...form, public: !form.public})} />
+            <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/40 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple peer-checked:after:bg-white" />
+          </label>
+        </SettingsRow>
+        <div className="h-px w-full bg-white/5" />
+        <SettingsRow label="System Sounds" desc="Play 'Zap' sound on successful actions">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked={soundEnabled} className="sr-only peer" onChange={() => setSoundEnabled(!soundEnabled)} />
+            <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/40 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple peer-checked:after:bg-white" />
+          </label>
+        </SettingsRow>
+        <div className="h-px w-full bg-white/5" />
+        <SettingsRow label="Haptic Feedback" desc="Vibrate device on successful actions (Mobile only)">
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" checked={hapticsEnabled} className="sr-only peer" onChange={() => setHapticsEnabled(!hapticsEnabled)} />
             <div className="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/40 after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple peer-checked:after:bg-white" />
           </label>
         </SettingsRow>

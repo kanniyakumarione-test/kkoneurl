@@ -27,6 +27,7 @@ import ProLimitModal from './components/ProLimitModal';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import * as api from './api';
 import { useToast } from './context/ToastContext';
+import { usePreferences } from './context/UserPreferencesContext';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -119,10 +120,13 @@ function App() {
     loadLinks();
   }, [user]);
 
+  const { playZap } = usePreferences();
+
   const addLink = async (newLinkData) => {
     try {
       const { data } = await api.createLink(newLinkData);
       setLinks(prev => [data, ...(Array.isArray(prev) ? prev : [])]);
+      playZap();
       toast('Link created successfully!', 'success');
       return data;
     } catch (err) {

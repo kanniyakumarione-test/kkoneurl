@@ -8,19 +8,23 @@ import App from './App.jsx';
 
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 
+import { PreferencesProvider } from './context/UserPreferencesContext';
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <ToastProvider>
-          <PayPalScriptProvider options={{
-            "client-id": "AZLSdlP2kcF_ddZy4H0KD-tpZ9QHux51eIcC6aRK1O6n5eit401-NURWxfGvLMxcsCkA85JfhQGdP1-_",
-            vault: true, // Required for subscriptions
-            intent: "subscription"
-          }}>
-            <App />
-          </PayPalScriptProvider>
-        </ToastProvider>
+        <PreferencesProvider>
+          <ToastProvider>
+            <PayPalScriptProvider options={{
+              "client-id": "AZLSdlP2kcF_ddZy4H0KD-tpZ9QHux51eIcC6aRK1O6n5eit401-NURWxfGvLMxcsCkA85JfhQGdP1-_",
+              vault: true, // Required for subscriptions
+              intent: "subscription"
+            }}>
+              <App />
+            </PayPalScriptProvider>
+          </ToastProvider>
+        </PreferencesProvider>
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,
