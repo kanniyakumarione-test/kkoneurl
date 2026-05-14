@@ -97,4 +97,8 @@ export const getReferralStats = () => API.get('/referrals/stats');
 export const claimScratchCard = () => API.post('/referrals/claim');
 export const redeemPromoCode = (code) => API.post('/referrals/redeem', { code });
 
+// Payments
+export const createRazorpayOrder = (amount, userId) => API.post('/payments/razorpay-order', { amount, userId });
+export const verifyRazorpayPayment = (paymentData) => API.post('/payments/razorpay-verify', paymentData);
+
 export default API;
