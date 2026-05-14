@@ -124,3 +124,28 @@ exports.getGrowthStats = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Delete user's links first
+    await supabase.from('links').delete().eq('user_id', id);
+    // Delete user profile
+    const { error } = await supabase.from('users').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ success: true, message: 'User and all associated data deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.deleteLink = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase.from('links').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ success: true, message: 'Link deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
