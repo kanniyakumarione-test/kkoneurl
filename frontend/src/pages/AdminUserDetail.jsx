@@ -222,7 +222,7 @@ const AdminUserDetail = () => {
                   <h3 className="font-black text-white text-xl truncate mb-1">{l.title || 'Untitled Link'}</h3>
                   <div className="flex flex-col gap-1">
                     <p className="text-xs text-white/20 font-mono truncate max-w-md">
-                      <span className="text-purple-light/40">kkoneurl.com/</span>{l.short_code}
+                      <span className="text-purple-light/40">kkoneurl.kanniyakumarione.com/</span>{l.short_code}
                     </p>
                     <p className="text-[10px] text-white/10 truncate max-w-md font-medium">{l.original_url}</p>
                   </div>

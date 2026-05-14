@@ -91,7 +91,7 @@ const QRCode = ({ links }) => {
                         }}
                       >
                         <span className="font-bold truncate">{l.title || l.short_code}</span>
-                        <span className="text-[10px] opacity-40 truncate">kkoneurl.com/{l.short_code}</span>
+                        <span className="text-[10px] opacity-40 truncate">kkoneurl.kanniyakumarione.com/{l.short_code}</span>
                       </button>
                     ))}
                   </div>

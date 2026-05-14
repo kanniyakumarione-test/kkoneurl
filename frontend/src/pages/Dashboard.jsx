@@ -196,7 +196,7 @@ const Dashboard = ({ links }) => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold truncate group-hover:text-white transition-colors">{link.title || link.short_code}</p>
-                  <p className="text-[11px] text-purple-light/70 truncate">kkoneurl.com/{link.short_code}</p>
+                  <p className="text-[11px] text-purple-light/70 truncate">kkoneurl.kanniyakumarione.com/{link.short_code}</p>
                 </div>
                 <div className="text-right flex flex-col items-end justify-center h-full group-hover:scale-110 transition-transform">
                   <p className="text-sm font-black leading-tight">{(link.clicks || 0).toLocaleString()}</p>

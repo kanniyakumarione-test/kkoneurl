@@ -29,7 +29,7 @@ const LinkCard = ({ link, onDelete, onToggle, onCopy, onMove }) => {
               <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${active ? 'bg-green shadow-[0_0_8px_rgba(67,233,123,0.5)]' : 'bg-white/20'} group-hover:scale-150 transition-transform`} />
             </div>
             <div className="flex items-center gap-1.5 text-[11px]">
-              <a href={`https://kkoneurl.com/${link.short_code}`} target="_blank" className="text-purple-light font-bold hover:underline shrink-0 hover:text-white transition-colors">
+              <a href={`https://kkoneurl.kanniyakumarione.com/${link.short_code}`} target="_blank" className="text-purple-light font-bold hover:underline shrink-0 hover:text-white transition-colors">
                 /{link.short_code}
               </a>
               <span className="text-white/10">|</span>
@@ -54,7 +54,7 @@ const LinkCard = ({ link, onDelete, onToggle, onCopy, onMove }) => {
 
           {/* Compact Actions */}
           <div className="flex items-center gap-0.5">
-            <button onClick={() => onCopy(`https://kkoneurl.com/${link.short_code}`)} className="p-2.5 rounded-lg hover:bg-white/5 text-white/20 hover:text-white transition-all active:scale-90" title="Copy">
+            <button onClick={() => onCopy(`https://kkoneurl.kanniyakumarione.com/${link.short_code}`)} className="p-2.5 rounded-lg hover:bg-white/5 text-white/20 hover:text-white transition-all active:scale-90" title="Copy">
               <Copy size={16} />
             </button>
             <button onClick={() => onMove(link)} className="p-2.5 rounded-lg hover:bg-white/5 text-white/20 hover:text-cyan transition-all active:scale-90" title="Move to Bundle">

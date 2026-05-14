@@ -1,12 +1,15 @@
 User-agent: *
 Allow: /
 
-# Private app routes
+# Secure Admin & App Routes
+Disallow: /admin
 Disallow: /dashboard
 Disallow: /links
 Disallow: /analytics
 Disallow: /qr
 Disallow: /bio
 Disallow: /settings
+Disallow: /password-gate
 
+# Sitemaps
 Sitemap: https://kkoneurl.kanniyakumarione.com/sitemap.xml
