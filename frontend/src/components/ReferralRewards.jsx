@@ -139,7 +139,7 @@ const ReferralRewards = () => {
   };
 
   const copyReferralLink = () => {
-    const link = `https://kkoneurl.kanniyakumarione.com/register?ref=${stats.referralCode}`;
+    const link = `https://kkoneurl.kanniyakumarione.com/login?ref=${stats.referralCode}`;
     navigator.clipboard.writeText(link);
     toast('Referral link copied! 🚀', 'success');
   };
@@ -179,7 +179,7 @@ const ReferralRewards = () => {
              <div className="flex gap-2">
                 <input 
                   readOnly 
-                  value={`https://kkoneurl.kanniyakumarione.com/register?ref=${stats.referralCode}`}
+                  value={`https://kkoneurl.kanniyakumarione.com/login?ref=${stats.referralCode}`}
                   className="input flex-1 font-mono text-[10px] opacity-70"
                 />
                 <button 

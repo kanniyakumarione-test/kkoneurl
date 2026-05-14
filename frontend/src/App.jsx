@@ -161,6 +161,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Auth />} />
+        <Route path="/register" element={<Navigate to={`/login${location.search}`} replace />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/api-docs" element={<ApiDocs />} />
