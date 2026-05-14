@@ -32,6 +32,20 @@ const RedirectGate = () => {
     }
   }, [countdown, linkData]);
 
+  useEffect(() => {
+    // 💰 Inject Monetag Multitag specifically for the gate page
+    const script = document.createElement('script');
+    script.src = "https://quge5.com/88/tag.min.js";
+    script.setAttribute('data-zone', '239335');
+    script.async = true;
+    script.setAttribute('data-cfasync', 'false');
+    document.head.appendChild(script);
+
+    return () => {
+      // Clean up if necessary, though global scripts usually stay
+    };
+  }, []);
+
   if (error) {
     return (
       <div className="min-h-screen bg-[#07070f] flex items-center justify-center text-white p-6">
