@@ -78,15 +78,12 @@ exports.redirectUrl = async (req, res) => {
       return res.redirect(`https://kkoneurl.kanniyakumarione.com/p/${code}`);
     }
 
-    // 3. 📊 Analytics Tracking (Async - don't block redirect)
+    // 3. 📊 Analytics Tracking (Immediate update)
     const trackAnalytics = async () => {
       try {
-        const ua = require('useragent').parse(userAgent);
-        const device = ua.device.family === 'Other' ? (userAgent.includes('Mobile') ? 'mobile' : 'desktop') : ua.device.family.toLowerCase();
-        const browser = ua.family.toLowerCase();
         const today = new Date().toISOString().split('T')[0];
-
-        // Update Stats
+        
+        // Prepare stats
         const device_stats = link.device_stats || { mobile: 0, desktop: 0, tablet: 0 };
         const browser_stats = link.browser_stats || {};
         const daily_clicks = link.daily_clicks || [];
@@ -100,24 +97,15 @@ exports.redirectUrl = async (req, res) => {
           if (recent_ips.length > 100) recent_ips.shift();
         }
 
-        // 🌍 Geo Location (Async fetch)
-        try {
-          const axios = require('axios');
-          const geoRes = await axios.get(`https://ipapi.co/${ip}/json/`).catch(() => null);
-          if (geoRes && geoRes.data && geoRes.data.country_name) {
-            const country = geoRes.data.country_name;
-            geo_stats[country] = (geo_stats[country] || 0) + 1;
-          }
-        } catch (gErr) {
-          console.error('Geo Error:', gErr.message);
-        }
+        // 📱 Device & Browser Detection
+        const ua = require('useragent').parse(userAgent);
+        const device = ua.device.family === 'Other' ? (userAgent.includes('Mobile') ? 'mobile' : 'desktop') : ua.device.family.toLowerCase();
+        const browser = ua.family.toLowerCase();
 
-        // Increment device
         if (device.includes('iphone') || device.includes('mobile')) device_stats.mobile = (device_stats.mobile || 0) + 1;
         else if (device.includes('ipad') || device.includes('tablet')) device_stats.tablet = (device_stats.tablet || 0) + 1;
         else device_stats.desktop = (device_stats.desktop || 0) + 1;
 
-        // Increment browser
         browser_stats[browser] = (browser_stats[browser] || 0) + 1;
 
         // Daily clicks
@@ -125,10 +113,37 @@ exports.redirectUrl = async (req, res) => {
         if (dayIdx > -1) daily_clicks[dayIdx].clicks += 1;
         else daily_clicks.push({ date: today, clicks: 1 });
 
-        // Milestone Notification Check
         const totalClicks = (link.clicks || 0) + 1;
         const totalUnique = (link.unique_clicks || 0) + (isUnique ? 1 : 0);
-        
+
+        // Update DB (Immediate)
+        await supabase.from('links').update({
+          clicks: totalClicks,
+          unique_clicks: totalUnique,
+          device_stats,
+          browser_stats,
+          recent_ips,
+          daily_clicks: daily_clicks.slice(-30)
+        }).eq('id', link.id);
+
+        // 🌍 Geo Location (Separate background task)
+        (async () => {
+          try {
+            const axios = require('axios');
+            const geoRes = await axios.get(`https://ipapi.co/${ip}/json/`).catch(() => null);
+            if (geoRes?.data?.country_name) {
+              const country = geoRes.data.country_name;
+              const { data: latestLink } = await supabase.from('links').select('geo_stats').eq('id', link.id).single();
+              const latestGeo = latestLink?.geo_stats || {};
+              latestGeo[country] = (latestGeo[country] || 0) + 1;
+              await supabase.from('links').update({ geo_stats: latestGeo }).eq('id', link.id);
+            }
+          } catch (gErr) {
+            console.error('Geo Update Failed:', gErr.message);
+          }
+        })();
+
+        // Milestone Notification
         const milestones = [10, 50, 100, 500, 1000, 5000];
         if (milestones.includes(totalClicks)) {
           await supabase.from('notifications').insert([{
@@ -138,18 +153,8 @@ exports.redirectUrl = async (req, res) => {
             message: `Your link "${link.title || code}" has reached ${totalClicks} clicks!`
           }]);
         }
-
-        await supabase.from('links').update({
-          clicks: totalClicks,
-          unique_clicks: totalUnique,
-          device_stats,
-          browser_stats,
-          geo_stats,
-          recent_ips,
-          daily_clicks: daily_clicks.slice(-30) // Keep last 30 days
-        }).eq('id', link.id);
       } catch (err) {
-        console.error('Analytics Error:', err);
+        console.error('Analytics Tracking Error:', err.message);
       }
     };
     trackAnalytics();
