@@ -43,8 +43,13 @@ const API = axios.create({
 // Automatically attach token to every request
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
+  const refCode = localStorage.getItem('referral_code');
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  if (refCode) {
+    config.headers['x-referral-code'] = refCode;
   }
   return config;
 });

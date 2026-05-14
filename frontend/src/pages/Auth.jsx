@@ -8,6 +8,13 @@ const Auth = () => {
   const location = useLocation();
   const pendingUrl = location.state?.pendingUrl;
   const [loading, setLoading] = useState(false);
+
+  // 🔗 Capture Referral Code
+  const searchParams = new URLSearchParams(location.search);
+  const refCode = searchParams.get('ref');
+  if (refCode) {
+    localStorage.setItem('referral_code', refCode);
+  }
   
   const { loginWithGoogle } = useAuth();
   const navigate = useNavigate();

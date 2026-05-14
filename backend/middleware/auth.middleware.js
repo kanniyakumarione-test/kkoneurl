@@ -4,7 +4,7 @@ const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'aigenerator2k@gmail.com').toLow
 
 const generateUsername = () => `user_${Math.random().toString(36).substring(2, 7)}`;
 
-const findOrCreateDbUser = async ({ email, name, avatar }) => {
+const findOrCreateDbUser = async ({ email, name, avatar, referralCode }) => {
   const normalizedEmail = (email || '').toLowerCase().trim();
   if (!normalizedEmail) throw new Error('Missing email in Firebase token');
 
@@ -21,6 +21,13 @@ const findOrCreateDbUser = async ({ email, name, avatar }) => {
   let lastError = null;
 
   // Retry username generation on rare uniqueness collisions.
+  let referredById = null;
+  if (referralCode) {
+    const { data: referrer } = await supabase.from('users').select('id').eq('referral_code', referralCode).single();
+    if (referrer) referredById = referrer.id;
+  }
+
+  // Retry username generation on rare uniqueness collisions.
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const username = generateUsername();
     const { data, error } = await supabase
@@ -31,7 +38,8 @@ const findOrCreateDbUser = async ({ email, name, avatar }) => {
         username,
         username_customized: false,
         avatar: avatar || null,
-        referral_code: Math.random().toString(36).substring(2, 10).toUpperCase()
+        referral_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
+        referred_by: referredById
       }])
       .select('id, email, display_name, username, avatar, is_admin, plan, link_limit, referral_code')
       .single();
@@ -68,7 +76,8 @@ exports.protect = async (req, res, next) => {
     const dbUser = await findOrCreateDbUser({
       email: decodedToken.email,
       name: decodedToken.name,
-      avatar: decodedToken.picture
+      avatar: decodedToken.picture,
+      referralCode: req.headers['x-referral-code']
     });
     
     if (dbUser.is_banned) {
