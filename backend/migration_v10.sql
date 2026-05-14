@@ -5,6 +5,12 @@ ADD COLUMN IF NOT EXISTS referred_by UUID REFERENCES users(id) ON DELETE SET NUL
 ADD COLUMN IF NOT EXISTS link_limit INTEGER DEFAULT 100,
 ADD COLUMN IF NOT EXISTS plan TEXT DEFAULT 'free';
 
+-- Also ensure links table has analytics columns
+ALTER TABLE links
+ADD COLUMN IF NOT EXISTS unique_clicks INTEGER DEFAULT 0,
+ADD COLUMN IF NOT EXISTS geo_stats JSONB DEFAULT '{}'::jsonb,
+ADD COLUMN IF NOT EXISTS recent_ips TEXT[] DEFAULT '{}';
+
 -- Function to generate random alphanumeric string for referral codes
 CREATE OR REPLACE FUNCTION generate_referral_code() RETURNS TEXT AS $$
 DECLARE
