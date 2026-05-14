@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { Save, User, Bell, Shield, Trash2, LogOut, AlertTriangle, CheckCircle, Eye, EyeOff, Zap, Copy, BarChart3, CreditCard, Sparkles, ArrowUpRight, Gift } from 'lucide-react';
 
 
@@ -33,7 +35,9 @@ const SettingsRow = ({ label, desc, children }) => (
 
 const Settings = () => {
   const toast = useToast();
+  const navigate = useNavigate();
   const { logout, refreshProfile, profile, isAdmin } = useAuth();
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);

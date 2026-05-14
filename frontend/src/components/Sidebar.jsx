@@ -21,7 +21,8 @@ const adminNavItem = { path: '/admin', icon: <Shield size={18} />, label: 'Admin
 const Sidebar = ({ open, onClose, links = [] }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, profile, logout, isAdmin } = useAuth();
+  const { user, profile, logout, isAdmin, isExpiringSoon } = useAuth();
+
   const visibleNavItems = isAdmin ? [...navItems, adminNavItem] : navItems;
 
   const linkCount = links.length;
@@ -57,8 +58,22 @@ const Sidebar = ({ open, onClose, links = [] }) => {
         </div>
 
         {/* Plan Info */}
-        <div className="px-6 mb-6">
+        <div className="px-6 mb-6 space-y-3">
+          {/* Renewal Alert */}
+          {isExpiringSoon && (
+            <div 
+              onClick={() => { onClose(); navigate('/upgrade'); }}
+              className="p-3 bg-pink/10 border border-pink/30 rounded-xl cursor-pointer hover:bg-pink/20 transition-all animate-pulse shadow-lg shadow-pink/5"
+            >
+              <div className="flex items-center gap-2 text-pink text-[10px] font-black uppercase tracking-widest">
+                <AlertTriangle size={12} /> Renewal Required
+              </div>
+              <p className="text-[10px] text-white/50 mt-1">Your Pro plan expires in less than 3 days. Renew now to avoid losing access.</p>
+            </div>
+          )}
+
           <div className="bg-bg-card border border-white/5 p-4 rounded-2xl">
+
             <div className="flex items-center justify-between mb-3">
               <span className="text-[10px] font-black uppercase tracking-widest text-purple-light">Free Plan</span>
               <span className="text-[10px] text-white/30 font-bold">{linkCount}/{linkLimit} links</span>

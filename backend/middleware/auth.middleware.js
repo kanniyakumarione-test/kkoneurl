@@ -10,9 +10,11 @@ const findOrCreateDbUser = async ({ email, name, avatar, referralCode }) => {
 
   const { data: existing, error: lookupError } = await supabase
     .from('users')
-    .select('id, email, display_name, username, avatar, is_admin, plan, is_banned, link_limit, referral_code')
+    .select('id, email, display_name, username, avatar, is_admin, plan, is_banned, link_limit, referral_code, pro_until')
     .eq('email', normalizedEmail)
     .maybeSingle();
+
+
 
   if (lookupError) throw lookupError;
   if (existing?.id) return existing;
@@ -41,8 +43,9 @@ const findOrCreateDbUser = async ({ email, name, avatar, referralCode }) => {
         referral_code: Math.random().toString(36).substring(2, 10).toUpperCase(),
         referred_by: referredById
       }])
-      .select('id, email, display_name, username, avatar, is_admin, plan, link_limit, referral_code')
+      .select('id, email, display_name, username, avatar, is_admin, plan, link_limit, referral_code, pro_until')
       .single();
+
 
     if (!error && data?.id) {
       createdUser = data;
@@ -83,6 +86,13 @@ exports.protect = async (req, res, next) => {
     if (dbUser.is_banned) {
       return res.status(403).json({ message: 'Your account has been suspended. Please contact support.' });
     }
+    
+    // 🛡️ Pro Expiration Check
+    if (dbUser.plan === 'pro' && dbUser.pro_until && new Date(dbUser.pro_until) < new Date()) {
+      await supabase.from('users').update({ plan: 'free' }).eq('id', dbUser.id);
+      dbUser.plan = 'free';
+    }
+
 
     // Attach user info to request
     // Always use Supabase UUID as req.user.id to match DB schema.

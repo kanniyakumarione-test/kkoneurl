@@ -22,7 +22,9 @@ export const AuthProvider = ({ children }) => {
         bio: data.bio,
         settings: data.settings,
         plan: data.plan || 'free',
+        proUntil: data.pro_until,
         isAdmin: data.is_admin === true
+
       });
     } catch (err) {
       console.error('AuthContext: Failed to load profile', err);
@@ -83,9 +85,20 @@ export const AuthProvider = ({ children }) => {
 
   const refreshProfile = () => loadProfile();
   const isAdmin = profile?.isAdmin === true;
+  
+  // 🛡️ Subscription Expiry Check (3 days before)
+  const isExpiringSoon = () => {
+    if (profile?.plan !== 'pro' || !profile?.proUntil) return false;
+    const expiry = new Date(profile.pro_until || profile.proUntil);
+    const now = new Date();
+    const threeDaysInMs = 3 * 24 * 60 * 60 * 1000;
+    return (expiry - now) > 0 && (expiry - now) < threeDaysInMs;
+  };
+
 
   return (
-    <AuthContext.Provider value={{ user, profile, loginWithGoogle, logout, loading, refreshProfile, isAdmin }}>
+    <AuthContext.Provider value={{ user, profile, loginWithGoogle, logout, loading, refreshProfile, isAdmin, isExpiringSoon: isExpiringSoon() }}>
+
       {children}
     </AuthContext.Provider>
   );
